@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Mode — Pepper Instant Messenger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pink: #ff69b4; --pink-light: #FFF0F5; --pink-mid: #F4C0D1;
+    --pink-dark: #4B1528; --pink-deep: #993556;
+    --navy: #1a0038; --navy-mid: #2a004a; --purple: #7F77DD;
+    --purple-light: #EEEDFE; --cyan: #00ffff; --yellow: #ffff00;
+    --magenta: #ff00ff; --cream: #fff8fb;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: #FFF0F5; font-family: 'Space Mono', monospace; color: var(--navy); min-height: 100vh; overflow-x: hidden; }
+
+  /* FALLING */
+  .falling-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+  .falling-item { position: absolute; top: -60px; opacity: 0; animation: fall linear infinite; user-select: none; }
+  @keyframes fall { 0% { transform: translateY(-60px) rotate(0deg); opacity: 0; } 5% { opacity: 0.4; } 90% { opacity: 0.25; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+
+  /* NAV */
+  nav { background: var(--navy); border-bottom: 2px solid var(--pink); position: sticky; top: 0; z-index: 200; height: 54px; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+  .nav-logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 20px; color: var(--pink); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a { font-size: 10px; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--pink); }
+  .nav-links a.active { color: var(--pink); }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--cyan); transition: all 0.3s; }
+  .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+  .mobile-menu { display: none; position: fixed; top: 54px; left: 0; right: 0; background: var(--navy); border-bottom: 2px solid var(--pink); z-index: 199; padding: 20px 24px; flex-direction: column; gap: 16px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-size: 13px; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 0; border-bottom: 0.5px solid rgba(255,105,180,0.2); }
+
+  /* MARQUEE */
+  .marquee-bar { background: var(--navy-mid); border-bottom: 1px solid var(--magenta); padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1; }
+  .marquee-track { display: inline-block; animation: marquee 28s linear infinite; font-size: 10px; color: var(--yellow); letter-spacing: 0.07em; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* PAGE LAYOUT */
+  .page { padding: 44px 24px 60px; position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+  @media (max-width: 640px) { .page { padding: 28px 16px 48px; } nav { padding: 0 16px; } .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* PIM WINDOW */
+  .pim-outer { border: 2px solid var(--navy); margin-bottom: 32px; }
+
+  .pim-titlebar { background: var(--navy); height: 30px; display: flex; align-items: stretch; border-bottom: 2px solid var(--pink); }
+  .pim-titlebar-icon { width: 30px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--pink); flex-shrink: 0; }
+  .pim-titlebar-text { font-size: 11px; color: var(--pink); letter-spacing: 0.06em; display: flex; align-items: center; padding: 0 10px; flex: 1; }
+  .pim-controls { display: flex; }
+  .pim-ctrl { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #AFA9EC; cursor: pointer; border-left: 1px solid var(--navy-mid); font-family: monospace; transition: background 0.15s; }
+  .pim-ctrl:hover { background: var(--pink); color: #fff; }
+
+  .pim-menubar { background: var(--navy-mid); border-bottom: 1px solid var(--pink); display: flex; }
+  .pim-menu { font-size: 10px; color: #AFA9EC; padding: 5px 12px; cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s; }
+  .pim-menu:hover { background: var(--pink); color: #fff; }
+
+  /* PROFILE */
+  .pim-profile { background: var(--navy); padding: 14px 16px; border-bottom: 1px solid var(--pink); display: flex; align-items: center; gap: 12px; }
+  .pim-avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--pink); border: 2px solid #CECBF6; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-style: italic; font-size: 20px; color: white; flex-shrink: 0; }
+  .pim-sn { font-size: 13px; color: var(--pink); font-weight: 700; letter-spacing: 0.02em; }
+  .pim-away { font-size: 9px; color: #AFA9EC; margin-top: 3px; font-style: italic; }
+  .pim-location { font-size: 8px; color: #9FE1CB; margin-top: 3px; }
+  .pim-online-dot { width: 10px; height: 10px; border-radius: 50%; background: #00ff00; border: 1.5px solid var(--navy); flex-shrink: 0; margin-left: auto; }
+
+  /* BUDDY LIST */
+  .pim-body { background: var(--pink-light); }
+  .pim-group-header { font-size: 9px; color: var(--navy); letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 12px; display: flex; align-items: center; gap: 6px; background: var(--pink-mid); border-bottom: 0.5px solid var(--pink-mid); }
+  .pim-group-count { margin-left: auto; font-size: 9px; color: var(--pink-deep); }
+
+  .pim-buddy-consolidated { padding: 14px 16px; border-bottom: 0.5px solid var(--pink-mid); background: var(--pink-light); }
+  .pim-consolidated-handle { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 12px; letter-spacing: 0.02em; }
+  .pim-consolidated-icons { display: flex; gap: 16px; }
+  .pim-social-link { display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; cursor: pointer; transition: transform 0.15s; }
+  .pim-social-link:hover { transform: translateY(-2px); }
+  .pim-social-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--navy); }
+  .pim-social-label { font-size: 9px; color: var(--pink-deep); letter-spacing: 0.04em; }
+  .pim-social-dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--navy); }
+  .pim-buddy:hover { background: var(--purple-light); }
+  .pim-buddy-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid var(--navy); }
+  .pim-buddy-info { flex: 1; min-width: 0; }
+  .pim-buddy-name { font-size: 11px; color: var(--navy); font-weight: 700; }
+  .pim-buddy-handle { font-size: 9px; color: var(--pink-deep); margin-top: 2px; }
+  .pim-buddy-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid var(--navy); }
+
+  /* AWAY MESSAGE */
+  .pim-away-section { background: var(--navy-mid); margin: 0; border-bottom: 1px solid var(--pink); padding: 14px 16px; }
+  .pim-away-label { font-size: 9px; color: var(--yellow); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .pim-away-label-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--yellow); }
+  .pim-away-msg { font-size: 11px; color: #CECBF6; font-style: italic; line-height: 1.7; letter-spacing: 0.02em; }
+  .pim-away-sig { font-size: 9px; color: #AFA9EC; margin-top: 8px; }
+
+  /* STATUSBAR */
+  .pim-statusbar { background: var(--navy-mid); border-top: 1px solid var(--pink); padding: 5px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .pim-status-txt { font-size: 9px; color: #AFA9EC; letter-spacing: 0.04em; }
+  .pim-status-online { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #00ff00; }
+  .pim-status-dot-sm { width: 6px; height: 6px; border-radius: 50%; background: #00ff00; }
+
+  /* GUESTBOOK */
+  .guestbook { border: 2px solid var(--navy); }
+  .gb-titlebar { background: var(--navy); height: 30px; display: flex; align-items: stretch; border-bottom: 2px solid var(--pink); }
+  .gb-titlebar-icon { width: 30px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--pink); flex-shrink: 0; }
+  .gb-titlebar-text { font-size: 11px; color: var(--pink); letter-spacing: 0.06em; display: flex; align-items: center; padding: 0 10px; flex: 1; }
+  .gb-titlebar-count { font-size: 9px; color: #AFA9EC; display: flex; align-items: center; padding-right: 12px; }
+
+  .gb-entries { background: var(--pink-light); }
+  .gb-entry { padding: 14px 16px; border-bottom: 1px dashed var(--pink-mid); }
+  .gb-entry-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .gb-entry-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--navy); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .gb-entry-name { font-size: 11px; font-weight: 700; color: var(--navy); }
+  .gb-entry-date { font-size: 9px; color: var(--pink-deep); margin-left: auto; }
+  .gb-entry-msg { font-size: 11px; color: var(--navy); line-height: 1.6; }
+  .gb-entry-location { font-size: 9px; color: var(--pink-deep); margin-top: 4px; font-style: italic; }
+
+  /* GUESTBOOK FORM */
+  .gb-form { background: #fff; border-top: 2px solid var(--pink); padding: 16px; }
+  .gb-form-title { font-size: 10px; color: var(--pink-deep); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+  .gb-form-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .gb-input { font-family: 'Space Mono', monospace; font-size: 11px; padding: 8px 12px; border: 1.5px solid var(--pink-mid); background: var(--pink-light); color: var(--navy); outline: none; flex: 1; min-width: 120px; transition: border-color 0.15s; }
+  .gb-input:focus { border-color: var(--pink); }
+  .gb-textarea { font-family: 'Space Mono', monospace; font-size: 11px; padding: 8px 12px; border: 1.5px solid var(--pink-mid); background: var(--pink-light); color: var(--navy); outline: none; width: 100%; resize: vertical; min-height: 80px; transition: border-color 0.15s; margin-bottom: 8px; }
+  .gb-textarea:focus { border-color: var(--pink); }
+  .gb-submit { font-family: 'Space Mono', monospace; font-size: 11px; padding: 9px 22px; background: var(--navy); color: var(--pink); border: 2px solid var(--pink); cursor: pointer; letter-spacing: 0.06em; transition: all 0.2s; }
+  .gb-submit:hover { background: var(--pink); color: var(--navy); }
+  .gb-success { display: none; font-size: 11px; color: var(--pink-deep); font-style: italic; margin-top: 8px; }
+
+  /* FOOTER */
+  footer { background: var(--navy-mid); border-top: 1px solid var(--magenta); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: relative; z-index: 1; }
+  .footer-left { font-size: 9px; color: #AFA9EC; letter-spacing: 0.05em; }
+  .footer-right { font-size: 9px; color: var(--cyan); letter-spacing: 0.07em; display: flex; align-items: center; gap: 7px; }
+  .footer-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--pink); }
+</style>
+</head>
+<body>
+
+<div class="falling-container" id="falling-container"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg width="18" height="18" viewBox="0 0 52 52" fill="none"><path d="M8 26L44 10L34 26L44 42L8 26Z" fill="#ff69b4" stroke="#FFF0F5" stroke-width="2.5" stroke-linejoin="round"/></svg>
+    Travel Mode
+  </a>
+  <div class="nav-links">
+    <a href="index.html#gallery">gallery</a>
+    <a href="index.html#top8">[ top 8 ]</a>
+    <a href="index.html#itineraries">itineraries</a>
+    <a href="contact.html" class="active">contact</a>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html#gallery" onclick="closeMenu()">gallery</a>
+  <a href="index.html#top8" onclick="closeMenu()">[ top 8 ]</a>
+  <a href="index.html#itineraries" onclick="closeMenu()">itineraries</a>
+  <a href="contact.html" onclick="closeMenu()">contact</a>
+</div>
+
+<div class="marquee-bar">
+  <span class="marquee-track">
+    ✈ you've got mail &nbsp;★&nbsp; pepperpot.png is online &nbsp;★&nbsp; sign the guestbook &nbsp;★&nbsp; follow the journey &nbsp;★&nbsp; atlanta, ga &nbsp;★&nbsp; guyanese traveller &nbsp;★&nbsp; the world through my lens &nbsp;★&nbsp;&nbsp;&nbsp;&nbsp;
+    ✈ you've got mail &nbsp;★&nbsp; pepperpot.png is online &nbsp;★&nbsp; sign the guestbook &nbsp;★&nbsp; follow the journey &nbsp;★&nbsp; atlanta, ga &nbsp;★&nbsp; guyanese traveller &nbsp;★&nbsp; the world through my lens &nbsp;★&nbsp;
+  </span>
+</div>
+
+<div class="page">
+
+  <!-- PEPPER IM WINDOW -->
+  <div class="pim-outer">
+
+    <div class="pim-titlebar">
+      <div class="pim-titlebar-icon">
+        <svg width="16" height="16" viewBox="0 0 52 52" fill="none"><path d="M8 26L44 10L34 26L44 42L8 26Z" fill="#ff69b4" stroke="#CECBF6" stroke-width="2.5" stroke-linejoin="round"/><path d="M8 26L22 30L20 38L28 33" fill="#ff69b4" stroke="#CECBF6" stroke-width="2" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="pim-titlebar-text">Pepper Instant Messenger</div>
+      <div class="pim-controls">
+        <div class="pim-ctrl">─</div>
+        <div class="pim-ctrl">□</div>
+        <div class="pim-ctrl">✕</div>
+      </div>
+    </div>
+
+    <div class="pim-menubar">
+      <div class="pim-menu">file</div>
+      <div class="pim-menu">people</div>
+      <div class="pim-menu">travel</div>
+      <div class="pim-menu">help</div>
+    </div>
+
+    <div class="pim-profile">
+      <div class="pim-avatar">P</div>
+      <div style="flex:1;">
+        <div class="pim-sn">pepperpot.png</div>
+        <div class="pim-away">✈ always plotting the next trip</div>
+        <div class="pim-location">📍 atlanta, ga</div>
+      </div>
+      <div class="pim-online-dot"></div>
+    </div>
+
+    <div class="pim-body">
+
+      <div class="pim-group-header">
+        <span>▼</span>
+        find me here
+        <span class="pim-group-count">3 / 3 online</span>
+      </div>
+
+      <div class="pim-buddy-consolidated">
+        <div class="pim-consolidated-handle">@pepperpot.png</div>
+        <div class="pim-consolidated-icons">
+          <a href="https://instagram.com/pepperpot.png" target="_blank" rel="noopener" class="pim-social-link" title="instagram">
+            <div class="pim-social-icon" style="background:#fce4ec;">
+              <svg width="20" height="20" viewBox="0 0 52 52" fill="none"><rect x="8" y="8" width="36" height="36" rx="10" fill="#E1306C" stroke="#1a0038" stroke-width="3"/><circle cx="26" cy="26" r="9" fill="none" stroke="white" stroke-width="3"/><circle cx="37" cy="15" r="3" fill="white"/></svg>
+            </div>
+            <div class="pim-social-label">instagram</div>
+            <div class="pim-social-dot" style="background:#ff69b4;"></div>
+          </a>
+          <a href="https://tiktok.com/@pepperpot.png" target="_blank" rel="noopener" class="pim-social-link" title="tiktok">
+            <div class="pim-social-icon" style="background:#f3e5f5;">
+              <svg width="20" height="20" viewBox="0 0 52 52" fill="none"><rect x="8" y="8" width="36" height="36" rx="6" fill="#1a0038" stroke="#1a0038" stroke-width="3"/><path d="M30 16 C30 16 33 18 36 18 L36 24 C33 24 30 22 30 22 L30 36 C30 40 27 44 22 44 C17 44 14 40 14 36 C14 32 17 28 22 28 L22 34 C20 34 18 35 18 36 C18 38 20 40 22 40 C24 40 26 38 26 36 Z" fill="white"/></svg>
+            </div>
+            <div class="pim-social-label">tiktok</div>
+            <div class="pim-social-dot" style="background:#ffff00;"></div>
+          </a>
+          <a href="https://threads.net/@pepperpot.png" target="_blank" rel="noopener" class="pim-social-link" title="threads">
+            <div class="pim-social-icon" style="background:#e8eaf6;">
+              <svg width="20" height="20" viewBox="0 0 52 52" fill="none"><rect x="8" y="8" width="36" height="36" rx="10" fill="#1a0038" stroke="#1a0038" stroke-width="3"/><path d="M26 14 C20 14 16 18 16 24 C16 30 20 34 26 34 C28 34 30 34 32 32 C34 30 36 28 36 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M26 20 C26 20 30 22 32 26 C34 30 32 36 26 38" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="pim-social-label">threads</div>
+            <div class="pim-social-dot" style="background:#00ffff;"></div>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="pim-away-section">
+      <div class="pim-away-label"><div class="pim-away-label-dot"></div> away message</div>
+      <div class="pim-away-msg">"currently somewhere between my next destination and the one I can't stop thinking about. leave a message and i'll get back to you from wherever the map takes me next."</div>
+      <div class="pim-away-sig">— pepperpot.png</div>
+    </div>
+
+    <div class="pim-statusbar">
+      <div class="pim-status-txt">Pepper IM v1.0</div>
+      <div class="pim-status-txt">travelmode.blog</div>
+    </div>
+
+  </div>
+
+  <!-- GUESTBOOK -->
+  <div class="guestbook">
+
+    <div class="gb-titlebar">
+      <div class="gb-titlebar-icon">
+        <svg width="16" height="16" viewBox="0 0 52 52" fill="none"><rect x="8" y="6" width="36" height="40" rx="3" fill="#CECBF6" stroke="#FFF0F5" stroke-width="2.5"/><line x1="16" y1="18" x2="36" y2="18" stroke="#FFF0F5" stroke-width="2"/><line x1="16" y1="26" x2="36" y2="26" stroke="#FFF0F5" stroke-width="2"/><line x1="16" y1="34" x2="28" y2="34" stroke="#FFF0F5" stroke-width="2"/></svg>
+      </div>
+      <div class="gb-titlebar-text">guestbook — sign and leave your mark</div>
+      <div class="gb-titlebar-count" id="gb-count">3 entries</div>
+    </div>
+
+    <div class="gb-entries" id="gb-entries">
+
+      <div class="gb-entry">
+        <div class="gb-entry-header">
+          <div class="gb-entry-avatar" style="background:#EEEDFE;color:#534AB7;">A</div>
+          <div class="gb-entry-name">amsterdam_lover</div>
+          <div class="gb-entry-date">may 22, 2026</div>
+        </div>
+        <div class="gb-entry-msg">your amsterdam photos are unreal!! the canal shots especially. making me want to book a flight right now ✈</div>
+        <div class="gb-entry-location">📍 from: london, uk</div>
+      </div>
+
+      <div class="gb-entry">
+        <div class="gb-entry-header">
+          <div class="gb-entry-avatar" style="background:#FBEAF0;color:#993556;">T</div>
+          <div class="gb-entry-name">travelgirl_tee</div>
+          <div class="gb-entry-date">may 21, 2026</div>
+        </div>
+        <div class="gb-entry-msg">fellow guyanese traveller here!! love seeing us out here exploring the world. curacao is on my list for sure 🌊</div>
+        <div class="gb-entry-location">📍 from: toronto, canada</div>
+      </div>
+
+      <div class="gb-entry">
+        <div class="gb-entry-header">
+          <div class="gb-entry-avatar" style="background:#FAEEDA;color:#854F0B;">M</div>
+          <div class="gb-entry-name">miles_and_memories</div>
+          <div class="gb-entry-date">may 19, 2026</div>
+        </div>
+        <div class="gb-entry-msg">found you through threads and obsessed with this site!! the retro vibe is everything. followed on all three 🩷</div>
+        <div class="gb-entry-location">📍 from: atlanta, ga</div>
+      </div>
+
+    </div>
+
+    <div class="gb-form">
+      <div class="gb-form-title">✍ sign the guestbook</div>
+      <div class="gb-form-row">
+        <input class="gb-input" id="gb-name" placeholder="your name or handle" maxlength="40">
+        <input class="gb-input" id="gb-location" placeholder="where you're from" maxlength="40">
+      </div>
+      <textarea class="gb-textarea" id="gb-msg" placeholder="leave a message for pepperpot.png..." maxlength="280"></textarea>
+      <button class="gb-submit" onclick="submitEntry()">[ sign it ] ›</button>
+      <div class="gb-success" id="gb-success">✓ entry added — thanks for signing! 🩷</div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-left">travelmode.blog &nbsp;·&nbsp; atlanta, ga &nbsp;·&nbsp; updated may 2026</div>
+  <div class="footer-right"><div class="footer-pip"></div> built different</div>
+</footer>
+
+<script>
+  const items = ['✈', '★', '♡', '✦', '◈', '✿', '⊹', '✶'];
+  const colors = ['#ff69b4','#ffff00','#00ffff','#CECBF6','#F4C0D1','#ff69b4','#AFA9EC','#9FE1CB'];
+  const container = document.getElementById('falling-container');
+  const count = window.innerWidth < 600 ? 12 : 20;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'falling-item';
+    el.textContent = items[Math.floor(Math.random() * items.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.color = colors[Math.floor(Math.random() * colors.length)];
+    el.style.fontSize = (10 + Math.random() * 14) + 'px';
+    const dur = 10 + Math.random() * 18;
+    el.style.animationDuration = dur + 's';
+    el.style.animationDelay = -(Math.random() * dur) + 's';
+    container.appendChild(el);
+  }
+
+  function toggleMenu() {
+    document.getElementById('hamburger').classList.toggle('open');
+    document.getElementById('mobile-menu').classList.toggle('open');
+  }
+  function closeMenu() {
+    document.getElementById('hamburger').classList.remove('open');
+    document.getElementById('mobile-menu').classList.remove('open');
+  }
+
+  let entryCount = 3;
+
+  function submitEntry() {
+    const name = document.getElementById('gb-name').value.trim();
+    const location = document.getElementById('gb-location').value.trim();
+    const msg = document.getElementById('gb-msg').value.trim();
+    if (!name || !msg) {
+      document.getElementById('gb-name').style.borderColor = !name ? '#cc3333' : '';
+      document.getElementById('gb-msg').style.borderColor = !msg ? '#cc3333' : '';
+      return;
+    }
+    document.getElementById('gb-name').style.borderColor = '';
+    document.getElementById('gb-msg').style.borderColor = '';
+
+    const initial = name.charAt(0).toUpperCase();
+    const colors = ['#EEEDFE,#534AB7','#FBEAF0,#993556','#FAEEDA,#854F0B','#E6F1FB,#185FA5','#E1F5EE,#0F6E56'];
+    const c = colors[entryCount % colors.length].split(',');
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    const entry = document.createElement('div');
+    entry.className = 'gb-entry';
+    entry.style.background = '#fff8fb';
+    entry.innerHTML = `
+      <div class="gb-entry-header">
+        <div class="gb-entry-avatar" style="background:${c[0]};color:${c[1]};">${initial}</div>
+        <div class="gb-entry-name">${name}</div>
+        <div class="gb-entry-date">${today}</div>
+      </div>
+      <div class="gb-entry-msg">${msg}</div>
+      ${location ? `<div class="gb-entry-location">📍 from: ${location}</div>` : ''}
+    `;
+
+    const entries = document.getElementById('gb-entries');
+    entries.insertBefore(entry, entries.firstChild);
+
+    entryCount++;
+    document.getElementById('gb-count').textContent = entryCount + ' entries';
+    document.getElementById('gb-name').value = '';
+    document.getElementById('gb-location').value = '';
+    document.getElementById('gb-msg').value = '';
+
+    const success = document.getElementById('gb-success');
+    success.style.display = 'block';
+    setTimeout(() => success.style.display = 'none', 3000);
+  }
+</script>
+</body>
+</html>
