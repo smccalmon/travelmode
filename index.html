@@ -364,10 +364,10 @@ async function loadGallery() {
     grid.innerHTML = '';
 
     data.photos.forEach(photo => {
-      // Build a thumb URL using Cloudinary transformations (auto crop to square)
-      const thumbUrl = photo.url.replace('/upload/', '/upload/c_fill,w_400,h_400,q_auto,f_auto/');
+      // Square crop via Cloudinary transformations — works perfectly for iPhone portraits and landscapes
+      const thumbUrl = photo.url.replace('/upload/', '/upload/c_fill,w_600,h_600,g_auto,q_auto,f_auto/');
 
-      // Try to guess category from tags or filename
+      // Guess category from tags or filename
       const tags = photo.tags || [];
       const name = photo.filename.toLowerCase();
       let category = 'travel';
@@ -377,33 +377,34 @@ async function loadGallery() {
       else if (tags.includes('city') || name.includes('city') || name.includes('street') || name.includes('urban')) category = 'city';
 
       // Guess intl vs domestic from tags
-      const isIntl = tags.includes('international') || !tags.includes('domestic');
+      const isIntl = !tags.includes('domestic');
       const typeLabel = isIntl ? 'intl' : 'dom';
       const typeClass = isIntl ? 'tag-intl' : 'tag-dom';
 
-      // Format date
-      const date = photo.createdAt
-        ? new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(new Date(photo.createdAt))
-        : '';
+      // Clean up filename — remove Cloudinary hash-style names, replace dashes/underscores with spaces
+      const rawName = photo.filename || photo.publicId.split('/').pop();
+      const cleanName = rawName
+        .replace(/\.[^.]+$/, '')        // remove extension
+        .replace(/[-_]/g, ' ')          // dashes and underscores to spaces
+        .replace(/\b\w/g, l => l.toUpperCase()); // title case
 
       const card = document.createElement('div');
       card.className = 'ph-card';
       card.dataset.type = typeLabel;
       card.dataset.category = category;
       card.innerHTML = `
-        <div class="ph-thumb" style="background:#EEEDFE; height:160px;">
+        <div class="ph-thumb" style="background:#EEEDFE; height:0; padding-bottom:100%; position:relative;">
           <img
             src="${thumbUrl}"
-            alt="${photo.filename}"
-            style="width:100%;height:100%;object-fit:cover;display:block;"
+            alt="${cleanName}"
+            style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;"
             loading="lazy"
-            onerror="this.style.display='none'"
+            onerror="this.parentElement.style.paddingBottom='60px'"
           >
         </div>
         <span class="ph-type-badge ${typeClass}">${typeLabel}</span>
         <div class="ph-info">
-          <div class="ph-city">${photo.filename.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '')}</div>
-          <div class="ph-meta">${category} · ${date}</div>
+          <div class="ph-city">${cleanName}</div>
         </div>
       `;
       grid.appendChild(card);
