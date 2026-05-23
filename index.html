@@ -353,7 +353,7 @@ async function loadGallery() {
     </div>`;
 
   try {
-    const res = await fetch('/.netlify/functions/get-photos');
+    const res = await fetch('/.netlify/functions/getphotos');
     const data = await res.json();
 
     if (!data.photos || data.photos.length === 0) {
