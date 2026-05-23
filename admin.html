@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Mode — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pink: #ff69b4; --pink-light: #FFF0F5; --pink-mid: #F4C0D1;
+    --pink-dark: #4B1528; --pink-deep: #993556;
+    --navy: #1a0038; --navy-mid: #2a004a; --purple: #7F77DD;
+    --purple-light: #EEEDFE; --cyan: #00ffff; --yellow: #ffff00;
+    --magenta: #ff00ff; --cream: #fff8fb;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--pink-light); font-family: 'Space Mono', monospace; color: var(--navy); min-height: 100vh; }
+
+  /* NAV */
+  nav { background: var(--navy); border-bottom: 2px solid var(--pink); height: 54px; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+  .nav-logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 18px; color: var(--pink); text-decoration: none; }
+  .nav-tag { font-size: 9px; color: var(--yellow); letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid var(--yellow); padding: 2px 8px; border-radius: 3px; }
+  .nav-back { font-size: 10px; color: var(--cyan); text-decoration: none; letter-spacing: 0.08em; display: flex; align-items: center; gap: 5px; }
+  .nav-back:hover { color: var(--pink); }
+
+  /* GATE */
+  .gate { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 54px); padding: 24px; }
+  .gate-card { background: #fff; border: 1px solid var(--pink-mid); border-radius: 12px; padding: 48px 36px; text-align: center; max-width: 380px; width: 100%; }
+  .gate-icon { font-size: 36px; margin-bottom: 16px; }
+  .gate-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--navy); margin-bottom: 6px; }
+  .gate-sub { font-size: 10px; color: var(--pink-deep); letter-spacing: 0.04em; margin-bottom: 24px; line-height: 1.7; }
+  .gate-input { font-family: 'Space Mono', monospace; font-size: 12px; padding: 10px 16px; border: 1px solid var(--pink-mid); border-radius: 6px; background: var(--cream); color: var(--navy); outline: none; width: 100%; margin-bottom: 10px; letter-spacing: 0.06em; }
+  .gate-input:focus { border-color: var(--pink); }
+  .gate-btn { font-family: 'Space Mono', monospace; font-size: 11px; padding: 10px 0; width: 100%; background: var(--navy); color: var(--pink); border: 1px solid var(--pink); border-radius: 6px; cursor: pointer; letter-spacing: 0.08em; transition: all 0.2s; }
+  .gate-btn:hover { background: var(--pink); color: var(--navy); }
+  .gate-error { font-size: 10px; color: #cc3333; margin-top: 10px; display: none; }
+
+  /* ADMIN PANEL */
+  .admin-panel { display: none; max-width: 680px; margin: 0 auto; padding: 36px 24px 60px; }
+  .admin-header { margin-bottom: 32px; }
+  .admin-title { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--navy); margin-bottom: 6px; }
+  .admin-title em { color: var(--pink); font-style: italic; }
+  .admin-sub { font-size: 10px; color: var(--pink-deep); letter-spacing: 0.05em; }
+
+  /* SECTIONS */
+  .admin-section { margin-bottom: 36px; }
+  .admin-section-title { font-size: 11px; color: var(--pink-deep); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px dashed var(--pink-mid); }
+
+  /* UPLOAD */
+  .upload-zone { border: 1.5px dashed var(--pink); border-radius: 10px; padding: 32px 20px; text-align: center; background: var(--cream); cursor: pointer; transition: background 0.2s; margin-bottom: 14px; }
+  .upload-zone:hover { background: #ffe8f2; }
+  .upload-zone.dragging { background: #ffe8f2; border-color: var(--navy); }
+  .upload-icon { display: flex; justify-content: center; margin-bottom: 12px; }
+  .upload-icon svg { width: 36px; height: 36px; color: var(--pink); }
+  .upload-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--navy); margin-bottom: 5px; }
+  .upload-sub { font-size: 10px; color: var(--pink-deep); }
+
+  .progress-wrap { display: none; margin-bottom: 14px; }
+  .progress-label { font-size: 10px; color: var(--pink-deep); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+  .progress-bar-track { background: var(--pink-mid); border-radius: 20px; height: 5px; overflow: hidden; margin-bottom: 10px; }
+  .progress-bar-fill { height: 100%; background: var(--pink); border-radius: 20px; width: 0%; transition: width 0.3s ease; }
+  .file-list { display: flex; flex-direction: column; gap: 5px; }
+  .file-row { display: flex; align-items: center; gap: 10px; font-size: 10px; color: var(--pink-deep); }
+  .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .success-gallery { display: none; margin-bottom: 14px; }
+  .success-label { font-size: 9px; color: var(--pink-deep); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+  .thumbs-wrap { display: flex; gap: 8px; flex-wrap: wrap; }
+  .thumb-item { position: relative; border-radius: 6px; overflow: hidden; border: 1px solid var(--pink-mid); }
+  .thumb-item img { width: 80px; height: 80px; object-fit: cover; display: block; }
+  .thumb-caption { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(26,0,56,0.75); font-size: 7px; color: var(--pink); padding: 3px 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* TOGGLES */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 8px; border: 0.5px solid var(--pink-mid); background: #fff; margin-bottom: 8px; gap: 16px; }
+  .toggle-info { flex: 1; min-width: 0; }
+  .toggle-label { font-size: 12px; color: var(--navy); }
+  .toggle-sub { font-size: 10px; color: var(--pink-deep); margin-top: 2px; }
+  .toggle-switch { width: 38px; height: 22px; border-radius: 11px; background: var(--pink); position: relative; cursor: pointer; flex-shrink: 0; border: none; transition: background 0.2s; }
+  .toggle-switch.off { background: #ccc; }
+  .toggle-knob { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 2px; right: 2px; transition: all 0.2s; }
+  .toggle-switch.off .toggle-knob { right: auto; left: 2px; }
+
+  /* SIGNOUT */
+  .signout-btn { font-family: 'Space Mono', monospace; font-size: 10px; padding: 8px 18px; background: transparent; color: var(--pink-deep); border: 1px solid var(--pink-mid); border-radius: 6px; cursor: pointer; letter-spacing: 0.06em; transition: all 0.2s; }
+  .signout-btn:hover { border-color: var(--pink); color: var(--pink); }
+
+  @media (max-width: 500px) { .gate-card { padding: 36px 20px; } .admin-panel { padding: 24px 16px 48px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Travel Mode</a>
+  <span class="nav-tag">admin</span>
+  <a href="index.html" class="nav-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    back to site
+  </a>
+</nav>
+
+<!-- PASSWORD GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-icon">🔒</div>
+    <div class="gate-title">Admin access</div>
+    <p class="gate-sub">this page is private. enter your passphrase to continue.</p>
+    <input type="password" class="gate-input" id="gate-input" placeholder="passphrase..." onkeydown="if(event.key==='Enter') checkPassword()">
+    <button class="gate-btn" onclick="checkPassword()">[ enter ]</button>
+    <div class="gate-error" id="gate-error">✗ incorrect passphrase — try again</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL (hidden until unlocked) -->
+<div class="admin-panel" id="admin-panel">
+  <div class="admin-header">
+    <div class="admin-title">Admin <em>panel</em></div>
+    <div class="admin-sub">upload photos · manage visibility · site controls</div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="admin-section">
+    <div class="admin-section-title">Upload photos</div>
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <input type="file" id="file-input" multiple accept="image/*" style="display:none;">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      </div>
+      <div class="upload-title">Drop photos here</div>
+      <p class="upload-sub">jpg · png · heic · up to 50mb · multiple files supported</p>
+    </div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label" id="progress-label">uploading...</div>
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-bar"></div></div>
+      <div class="file-list" id="file-list"></div>
+    </div>
+
+    <div class="success-gallery" id="success-gallery">
+      <div class="success-label">just uploaded</div>
+      <div class="thumbs-wrap" id="thumbs-wrap"></div>
+    </div>
+  </div>
+
+  <!-- VISIBILITY TOGGLES -->
+  <div class="admin-section">
+    <div class="admin-section-title">Visibility settings</div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">Show photos on city guide pages</div>
+        <div class="toggle-sub">Gallery photos appear inline with each published itinerary</div>
+      </div>
+      <button class="toggle-switch" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></button>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">Show itinerary text on public pages</div>
+        <div class="toggle-sub">Day-by-day guides visible to all visitors</div>
+      </div>
+      <button class="toggle-switch" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></button>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-label">Gallery visible to public</div>
+        <div class="toggle-sub">Turn off to hide the gallery section from visitors</div>
+      </div>
+      <button class="toggle-switch" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></button>
+    </div>
+  </div>
+
+  <!-- SIGN OUT -->
+  <div class="admin-section">
+    <div class="admin-section-title">Session</div>
+    <button class="signout-btn" onclick="signOut()">[ sign out ]</button>
+  </div>
+</div>
+
+<script>
+  // ── CHANGE THIS to your passphrase ──
+  const ADMIN_PASS = 'travelmode2026';
+
+  // ── CLOUDINARY ──
+  const CLOUD_NAME = 'de8j2tdum';
+  const UPLOAD_PRESET = 'travelmode_upload';
+  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+
+  function checkPassword() {
+    const val = document.getElementById('gate-input').value;
+    if (val === ADMIN_PASS) {
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'block';
+      sessionStorage.setItem('tm_admin', '1');
+    } else {
+      const err = document.getElementById('gate-error');
+      err.style.display = 'block';
+      document.getElementById('gate-input').value = '';
+      document.getElementById('gate-input').focus();
+    }
+  }
+
+  // Auto-unlock if already authenticated this session
+  if (sessionStorage.getItem('tm_admin') === '1') {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+  }
+
+  function signOut() {
+    sessionStorage.removeItem('tm_admin');
+    document.getElementById('gate').style.display = 'flex';
+    document.getElementById('admin-panel').style.display = 'none';
+    document.getElementById('gate-input').value = '';
+  }
+
+  // ── DRAG AND DROP ──
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('upload-zone').classList.add('dragging');
+  }
+  function handleDragLeave() {
+    document.getElementById('upload-zone').classList.remove('dragging');
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    handleDragLeave();
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (files.length) uploadFiles(files);
+  }
+
+  document.getElementById('file-input').addEventListener('change', function() {
+    if (this.files.length > 0) uploadFiles(Array.from(this.files));
+  });
+
+  // ── UPLOAD ──
+  async function uploadFiles(files) {
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressBar = document.getElementById('progress-bar');
+    const progressLabel = document.getElementById('progress-label');
+    const fileList = document.getElementById('file-list');
+    const successGallery = document.getElementById('success-gallery');
+    const thumbsWrap = document.getElementById('thumbs-wrap');
+
+    progressWrap.style.display = 'block';
+    successGallery.style.display = 'none';
+    fileList.innerHTML = '';
+    thumbsWrap.innerHTML = '';
+    progressBar.style.width = '0%';
+
+    files.forEach((file, i) => {
+      const row = document.createElement('div');
+      row.className = 'file-row';
+      row.innerHTML = `<span class="file-name">${file.name}</span><span id="fs-${i}" style="color:#aaa;flex-shrink:0;">waiting...</span>`;
+      fileList.appendChild(row);
+    });
+
+    let completed = 0;
+    const uploaded = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const statusEl = document.getElementById(`fs-${i}`);
+      statusEl.textContent = 'uploading...';
+      statusEl.style.color = 'var(--pink)';
+      progressLabel.textContent = `uploading ${i + 1} of ${files.length}...`;
+
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', UPLOAD_PRESET);
+        fd.append('folder', 'travelmode');
+
+        const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
+        const data = await res.json();
+
+        if (data.secure_url) {
+          uploaded.push(data.secure_url);
+          statusEl.textContent = '✓ done';
+          statusEl.style.color = '#639922';
+          const thumb = document.createElement('div');
+          thumb.className = 'thumb-item';
+          thumb.innerHTML = `<img src="${data.secure_url}" alt="${file.name}"><div class="thumb-caption">${file.name}</div>`;
+          thumbsWrap.appendChild(thumb);
+        } else {
+          statusEl.textContent = '✗ failed';
+          statusEl.style.color = '#cc3333';
+        }
+      } catch {
+        document.getElementById(`fs-${i}`).textContent = '✗ error';
+        document.getElementById(`fs-${i}`).style.color = '#cc3333';
+      }
+
+      completed++;
+      progressBar.style.width = (completed / files.length * 100) + '%';
+    }
+
+    progressLabel.textContent = `${uploaded.length} of ${files.length} uploaded successfully`;
+    progressLabel.style.color = uploaded.length === files.length ? '#639922' : '#cc3333';
+    if (uploaded.length > 0) successGallery.style.display = 'block';
+    document.getElementById('file-input').value = '';
+  }
+
+  // ── TOGGLES ──
+  function toggleSwitch(btn) {
+    btn.classList.toggle('off');
+  }
+</script>
+</body>
+</html>

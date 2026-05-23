@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Mode — The world through my lens.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pink: #ff69b4; --pink-light: #FFF0F5; --pink-mid: #F4C0D1;
+    --pink-dark: #4B1528; --pink-deep: #993556; --pink-rose: #D4537E;
+    --navy: #1a0038; --navy-mid: #2a004a; --purple: #7F77DD;
+    --purple-light: #EEEDFE; --cyan: #00ffff; --yellow: #ffff00;
+    --magenta: #ff00ff; --cream: #fff8fb;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--pink-light); font-family: 'Space Mono', monospace; color: var(--navy); min-height: 100vh; overflow-x: hidden; }
+
+  /* FALLING ELEMENTS */
+  .falling-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+  .falling-item { position: absolute; top: -60px; opacity: 0; animation: fall linear infinite; user-select: none; filter: drop-shadow(0 0 2px rgba(255,105,180,0.3)); }
+  @keyframes fall { 0% { transform: translateY(-60px) rotate(0deg); opacity: 0; } 5% { opacity: 0.35; } 90% { opacity: 0.25; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+
+  /* NAV */
+  nav { background: var(--navy); border-bottom: 2px solid var(--pink); position: sticky; top: 0; z-index: 200; height: 54px; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+  .nav-logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 20px; color: var(--pink); text-decoration: none; flex-shrink: 0; }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a { font-size: 10px; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; white-space: nowrap; }
+  .nav-links a:hover { color: var(--pink); }
+
+  /* HAMBURGER */
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--cyan); transition: all 0.3s; }
+  .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+  .mobile-menu { display: none; position: fixed; top: 54px; left: 0; right: 0; background: var(--navy); border-bottom: 2px solid var(--pink); z-index: 199; padding: 20px 24px; flex-direction: column; gap: 16px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-size: 13px; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 0; border-bottom: 0.5px solid rgba(255,105,180,0.2); }
+  .mobile-menu a:last-child { border-bottom: none; }
+
+  /* MARQUEE */
+  .marquee-bar { background: var(--navy-mid); border-bottom: 1px solid var(--magenta); padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1; }
+  .marquee-track { display: inline-block; animation: marquee 34s linear infinite; font-size: 10px; color: var(--yellow); letter-spacing: 0.07em; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* HERO */
+  .hero { padding: 50px 24px 44px; border-bottom: 1px dashed var(--pink-mid); position: relative; z-index: 1; }
+  .hero-eyebrow { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pink); margin-bottom: 14px; }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(36px, 8vw, 68px); color: var(--navy); line-height: 1.1; margin-bottom: 14px; }
+  .hero-title em { color: var(--pink); font-style: italic; }
+  .hero-sub { font-size: 10px; color: var(--pink-deep); letter-spacing: 0.06em; line-height: 2; }
+  .gear-row { display: flex; align-items: flex-start; gap: 14px; margin-top: 28px; padding-top: 22px; border-top: 1px dashed var(--pink-mid); flex-wrap: wrap; }
+  .gear-label { font-size: 9px; color: var(--pink-deep); letter-spacing: 0.12em; text-transform: uppercase; flex-shrink: 0; padding-top: 4px; }
+  .gear-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .gear-chip { font-size: 9px; padding: 4px 12px; border-radius: 20px; border: 0.5px solid var(--pink-mid); background: var(--cream); color: var(--pink-dark); display: flex; align-items: center; gap: 6px; }
+  .gear-chip svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* SECTIONS */
+  section { padding: 44px 24px; position: relative; z-index: 1; }
+  section + section { border-top: 1px dashed var(--pink-mid); }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; gap: 12px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(20px, 5vw, 26px); color: var(--navy); }
+  .section-title em { color: var(--pink); font-style: italic; }
+  .section-sub { font-size: 9px; color: var(--pink-deep); letter-spacing: 0.05em; margin-bottom: 20px; line-height: 1.7; }
+  .section-action { font-size: 10px; color: #00aacc; cursor: pointer; letter-spacing: 0.05em; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+
+  /* TOP 8 */
+  .top8-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 700px) { .top8-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
+  .top8-card { border-radius: 8px; overflow: hidden; border: 1.5px solid var(--pink-mid); background: #fff; cursor: pointer; position: relative; transition: border-color 0.2s, transform 0.15s; }
+  .top8-card:hover { border-color: var(--pink); transform: translateY(-2px); }
+  .top8-card.incoming { border-color: var(--pink); border-style: dashed; }
+  .top8-thumb { height: 90px; display: flex; align-items: center; justify-content: center; position: relative; }
+  .top8-thumb svg { width: 40px; height: 40px; }
+  @media (max-width: 400px) { .top8-thumb { height: 75px; } .top8-thumb svg { width: 32px; height: 32px; } }
+  .top8-rank { position: absolute; top: 6px; left: 6px; font-size: 9px; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; background: var(--navy); color: var(--pink); display: flex; align-items: center; justify-content: center; }
+  .top8-card.incoming .top8-rank { background: var(--pink); color: var(--navy); }
+  .top8-fave { position: absolute; top: 6px; right: 6px; font-size: 8px; padding: 2px 6px; background: var(--pink); color: #fff; border-radius: 3px; }
+  .top8-info { padding: 8px 9px 10px; }
+  .top8-city { font-size: 11px; font-weight: 700; color: var(--navy); }
+  @media (max-width: 400px) { .top8-city { font-size: 10px; } }
+  .top8-card.incoming .top8-city { color: var(--pink); }
+  .top8-country { font-size: 9px; color: var(--pink-deep); margin-top: 2px; }
+  .top8-card.incoming .top8-country { color: var(--purple); }
+  .top8-tag { margin-top: 5px; font-size: 8px; padding: 2px 7px; border-radius: 20px; display: inline-block; }
+  .tag-intl { background: #FBEAF0; color: var(--pink-dark); border: 0.5px solid var(--pink-mid); }
+  .tag-dom { background: #E6F1FB; color: #0C447C; border: 0.5px solid #B5D4F4; }
+  .tag-coming { background: var(--yellow); color: var(--navy); }
+  .top8-warning { font-size: 8px; color: var(--pink); margin-top: 4px; display: flex; align-items: center; gap: 3px; }
+  .top8-warning.purple { color: var(--purple); }
+  .top8-warning svg { width: 9px; height: 9px; flex-shrink: 0; }
+  .shake-note { background: var(--navy); border-radius: 8px; padding: 13px 16px; display: flex; align-items: flex-start; gap: 11px; margin-bottom: 18px; }
+  .shake-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--pink); flex-shrink: 0; margin-top: 4px; }
+  .shake-text { font-size: 10px; color: #CECBF6; line-height: 1.7; letter-spacing: 0.03em; }
+  .shake-text strong { color: var(--yellow); }
+  .on-deck-label { font-size: 9px; color: var(--pink-deep); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .on-deck-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .deck-chip { font-size: 9px; padding: 5px 11px; border-radius: 20px; border: 0.5px solid var(--pink-mid); background: var(--cream); color: var(--pink-deep); display: flex; align-items: center; gap: 5px; }
+  .deck-chip svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+  /* FILTER */
+  .filter-bar { display: flex; gap: 7px; margin-bottom: 18px; flex-wrap: wrap; }
+  .filter-pill { font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--pink-mid); background: transparent; color: var(--pink-deep); cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: 'Space Mono', monospace; transition: all 0.15s; }
+  .filter-pill:hover { border-color: var(--pink); color: var(--pink); }
+  .filter-pill.active { background: #EEEDFE; border-color: #AFA9EC; color: #26215C; font-weight: 700; }
+  .filter-pill svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+  /* PHOTO GRID */
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 600px) { .photo-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
+  @media (max-width: 340px) { .photo-grid { grid-template-columns: 1fr; } }
+  .ph-card { border-radius: 8px; overflow: hidden; border: 1px solid var(--pink-mid); background: #fff; cursor: pointer; position: relative; transition: border-color 0.2s, transform 0.15s; }
+  .ph-card:hover { border-color: var(--pink); transform: translateY(-2px); }
+  .ph-thumb { width: 100%; height: 100px; display: flex; align-items: center; justify-content: center; }
+  .ph-thumb svg { width: 44px; height: 44px; }
+  .ph-type-badge { position: absolute; top: 6px; right: 6px; font-size: 8px; padding: 2px 6px; border-radius: 3px; }
+  .ph-info { padding: 8px 10px 10px; }
+  .ph-city { font-size: 11px; font-weight: 700; color: var(--navy); }
+  .ph-meta { font-size: 9px; color: var(--pink-deep); margin-top: 2px; }
+
+  /* ITINERARY */
+  .itin-list { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+  .itin-row { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-radius: 8px; border: 0.5px solid var(--pink-mid); background: #fff; cursor: pointer; text-decoration: none; transition: background 0.15s, border-color 0.15s; }
+  .itin-row:hover { background: var(--cream); border-color: var(--pink); }
+  .itin-icon { width: 38px; height: 38px; border-radius: 8px; background: var(--purple-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .itin-icon svg { width: 20px; height: 20px; }
+  .itin-info { flex: 1; min-width: 0; }
+  .itin-name { font-size: 12px; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .itin-sub { font-size: 10px; color: var(--pink-deep); margin-top: 3px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .pub-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .itin-views { font-size: 11px; color: #888; white-space: nowrap; flex-shrink: 0; }
+
+  /* FOOTER */
+  footer { background: var(--navy-mid); border-top: 1px solid var(--magenta); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: relative; z-index: 1; }
+  .footer-left { font-size: 9px; color: #AFA9EC; letter-spacing: 0.05em; }
+  .footer-right { font-size: 9px; color: var(--cyan); letter-spacing: 0.07em; display: flex; align-items: center; gap: 7px; }
+  .footer-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--pink); }
+
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    nav { padding: 0 16px; }
+    .hero { padding: 36px 16px 36px; }
+    section { padding: 36px 16px; }
+    footer { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="falling-container" id="falling-container"></div>
+
+<nav>
+  <a href="#" class="nav-logo">Travel Mode</a>
+  <div class="nav-links">
+    <a href="#gallery">gallery</a>
+    <a href="#top8">[ top 8 ]</a>
+    <a href="#itineraries">itineraries</a>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#gallery" onclick="closeMenu()">gallery</a>
+  <a href="#top8" onclick="closeMenu()">[ top 8 ]</a>
+  <a href="#itineraries" onclick="closeMenu()">itineraries</a>
+</div>
+
+<div class="marquee-bar">
+  <span class="marquee-track">
+    ✈ amsterdam holds #1 &nbsp;★&nbsp; curacao at #2 &nbsp;★&nbsp; london · mexico city · paris · lisbon · nyc · panama rounding out the top 8 &nbsp;★&nbsp; chicago incoming july 2026 &nbsp;★&nbsp; rankings subject to change &nbsp;★&nbsp; still exploring &nbsp;★&nbsp; shot on iphone 16 pro · sony zv1f · dji osmo action 6 &nbsp;★&nbsp;&nbsp;&nbsp;&nbsp;
+    ✈ amsterdam holds #1 &nbsp;★&nbsp; curacao at #2 &nbsp;★&nbsp; london · mexico city · paris · lisbon · nyc · panama rounding out the top 8 &nbsp;★&nbsp; chicago incoming july 2026 &nbsp;★&nbsp; rankings subject to change &nbsp;★&nbsp; still exploring &nbsp;★&nbsp; shot on iphone 16 pro · sony zv1f · dji osmo action 6 &nbsp;★&nbsp;
+  </span>
+</div>
+
+<div class="hero fade-in">
+  <div class="hero-eyebrow">travelmode.blog</div>
+  <h1 class="hero-title">The world through<br><em>my</em> lens.</h1>
+  <p class="hero-sub">domestic adventures &nbsp;·&nbsp; international stories &nbsp;·&nbsp; atlanta based</p>
+  <div class="gear-row">
+    <span class="gear-label">Shot on</span>
+    <div class="gear-chips">
+      <span class="gear-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> iPhone 16 Pro</span>
+      <span class="gear-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Sony ZV1F</span>
+      <span class="gear-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> DJI Osmo Action 6</span>
+    </div>
+  </div>
+</div>
+
+<!-- TOP 8 -->
+<section id="top8">
+  <div class="section-head">
+    <h2 class="section-title">My top <em>8</em></h2>
+  </div>
+  <p class="section-sub">ranked by vibe, memory, food, and how hard i thought about booking a return flight &nbsp;·&nbsp; updated may 2026</p>
+  <div class="top8-grid">
+    <div class="top8-card">
+      <div class="top8-thumb" style="background:#EEEDFE;"><svg viewBox="0 0 24 24" fill="none" stroke="#7F77DD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 6 6 6 10c0 2 1 3 2 4l4 4 4-4c1-1 2-2 2-4 0-4-2-8-6-8z"/><path d="M8 10 Q10 6 12 10 Q14 6 16 10"/><line x1="12" y1="2" x2="12" y2="4"/></svg><div class="top8-rank">1</div><div class="top8-fave">fave</div></div>
+      <div class="top8-info"><div class="top8-city">Amsterdam</div><div class="top8-country">Netherlands</div><span class="top8-tag tag-intl">International</span></div>
+    </div>
+    <div class="top8-card">
+      <div class="top8-thumb" style="background:#E6F1FB;"><svg viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 Q6 14 9 18 Q12 14 15 18 Q18 14 21 18"/><path d="M3 14 Q6 10 9 14 Q12 10 15 14 Q18 10 21 14"/><circle cx="12" cy="7" r="3"/></svg><div class="top8-rank">2</div></div>
+      <div class="top8-info"><div class="top8-city">Curacao</div><div class="top8-country">Caribbean</div><span class="top8-tag tag-intl">International</span></div>
+    </div>
+    <div class="top8-card">
+      <div class="top8-thumb" style="background:#1a0038;"><svg viewBox="0 0 24 24" fill="none" stroke="#CECBF6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="11" rx="1"/><path d="M3 10 L12 3 L21 10"/><line x1="9" y1="21" x2="9" y2="15"/><line x1="15" y1="21" x2="15" y2="15"/><rect x="10" y="14" width="4" height="7"/></svg><div class="top8-rank">3</div></div>
+      <div class="top8-info"><div class="top8-city">London</div><div class="top8-country">United Kingdom</div><span class="top8-tag tag-intl">International</span></div>
+    </div>
+    <div class="top8-card">
+      <div class="top8-thumb" style="background:#FAEEDA;"><svg viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L8 8 H4 L7 13 L5 20 H10 L12 17 L14 20 H19 L17 13 L20 8 H16 Z"/><circle cx="12" cy="11" r="2"/></svg><div class="top8-rank">4</div></div>
+      <div class="top8-info"><div class="top8-city">Mexico City</div><div class="top8-country">Mexico</div><span class="top8-tag tag-intl">International</span></div>
+    </div>
+    <div class="top8-card">
+      <div class="top8-thumb" style="background:#FBEAF0;"><svg viewBox="0 0 24 24" fill="none" stroke="#D4537E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 9,9 3,9 7.5,14 5.5,21 12,17 18.5,21 16.5,14 21,9 15,9"/></svg><div class="top8-rank">5</div></div>
+      <div class="top8-info"><div class="top8-city">Paris</div><div class="top8-country">France</div><span class="top8-tag tag-intl">International</span></div>
+    </div>
+    <div class="top8-card">
+      <div class="top8-thumb" style="background:#EEEDFE;"><svg viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21 L3 10 Q3 8 5 7 L12 3 L19 7 Q21 8 21 10 L21 21"/><path d="M9 21 L9 15 Q9 13 12 13 Q15 13 15 15 L15 21"/><line x1="3" y1="21" x2="21" y2="21"/></svg><div class="top8-rank">6</div></div>
+      <div class="top8-info"><div class="top8-city">Lisbon</div><div class="top8-country">Portugal</div><span class="top8-tag tag-intl">International</span></div>
+    </div>
+    <div class="top8-card">
+      <div class="top8-thumb" style="background:#F1EFE8;"><svg viewBox="0 0 24 24" fill="none" stroke="#444441" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="4" height="16"/><rect x="8" y="3" width="4" height="19"/><rect x="14" y="8" width="4" height="14"/><rect x="20" y="4" width="2" height="18"/><line x1="1" y1="22" x2="23" y2="22"/></svg><div class="top8-rank">7</div></div>
+      <div class="top8-info"><div class="top8-city">New York</div><div class="top8-country">New York, USA</div><span class="top8-tag tag-dom">Domestic</span><div class="top8-warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg> at risk — jul 2026</div></div>
+    </div>
+    <div class="top8-card incoming">
+      <div class="top8-thumb" style="background:#1a0038;"><svg viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="3" height="18"/><rect x="6" y="1" width="3" height="21"/><rect x="11" y="6" width="3" height="16"/><rect x="16" y="2" width="3" height="20"/><rect x="21" y="8" width="2" height="14"/><line x1="0" y1="22" x2="24" y2="22"/></svg><div class="top8-rank">?</div></div>
+      <div class="top8-info"><div class="top8-city">Chicago</div><div class="top8-country">Illinois, USA</div><span class="top8-tag tag-coming">incoming jul 2026</span><div class="top8-warning purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> spot tbd</div></div>
+    </div>
+  </div>
+  <div class="shake-note">
+    <div class="shake-dot"></div>
+    <div class="shake-text"><strong>[ chicago incoming — july 2026 ]</strong> &nbsp;— first visit. architecture, deep dish, lake michigan. spots 7 and 8 are officially on notice.</div>
+  </div>
+  <div style="margin-top:16px;">
+    <div class="on-deck-label">on deck — didn't make the cut (yet)</div>
+    <div class="on-deck-chips">
+      <span class="deck-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg> Panama City</span>
+      <span class="deck-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8C8 10 5.9 16.17 3.82 21"/></svg> Costa Rica</span>
+      <span class="deck-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg> Phoenix</span>
+      <span class="deck-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 6 4 10 4 14a8 8 0 0 0 16 0c0-4-4-8-8-12z"/></svg> Las Vegas</span>
+      <span class="deck-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 Q6 14 9 18 Q12 14 15 18 Q18 14 21 18"/></svg> Los Angeles</span>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-head">
+    <h2 class="section-title">Recent <em>shots</em></h2>
+    <a href="#" class="section-action">view all ›</a>
+  </div>
+  <p class="section-sub">photos from every trip, sorted by destination and vibe</p>
+  <div class="filter-bar">
+    <button class="filter-pill active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> All</button>
+    <button class="filter-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Intl</button>
+    <button class="filter-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> Domestic</button>
+    <button class="filter-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 Q6 14 9 18 Q12 14 15 18 Q18 14 21 18"/><path d="M3 14 Q6 10 9 14 Q12 10 15 14 Q18 10 21 14"/></svg> Beach</button>
+    <button class="filter-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="4" height="16"/><rect x="8" y="3" width="4" height="19"/><rect x="14" y="8" width="4" height="14"/></svg> City</button>
+    <button class="filter-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-8 4 4 3-6 4 10"/></svg> Nature</button>
+    <button class="filter-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg> Food</button>
+  </div>
+  <div class="photo-grid" id="photo-grid">
+    <!-- photos load dynamically from Cloudinary -->
+  </div>
+</section>
+
+<!-- ITINERARIES -->
+<section id="itineraries">
+  <div class="section-head">
+    <h2 class="section-title">City <em>guides</em></h2>
+    <a href="#" class="section-action">view all ›</a>
+  </div>
+  <p class="section-sub">places i've been, written up for you &nbsp;·&nbsp; live on travelmode.blog</p>
+  <div class="itin-list">
+    <a href="#" class="itin-row">
+      <div class="itin-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M3 21 L3 10 Q3 8 5 7 L12 3 L19 7 Q21 8 21 10 L21 21"/><path d="M9 21 L9 15 Q9 13 12 13 Q15 13 15 15 L15 21"/><line x1="3" y1="21" x2="21" y2="21"/></svg></div>
+      <div class="itin-info"><div class="itin-name">Lisbon + Porto, Portugal</div><div class="itin-sub"><span class="pub-dot" style="background:#639922;"></span> Published · travelmode.blog/lisbon</div></div>
+      <div class="itin-views">1.2k ›</div>
+    </a>
+    <a href="#" class="itin-row">
+      <div class="itin-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M12 2C8 2 6 6 6 10c0 2 1 3 2 4l4 4 4-4c1-1 2-2 2-4 0-4-2-8-6-8z"/><path d="M8 10 Q10 6 12 10 Q14 6 16 10"/></svg></div>
+      <div class="itin-info"><div class="itin-name">Amsterdam in 3 days</div><div class="itin-sub"><span class="pub-dot" style="background:#639922;"></span> Published · travelmode.blog/amsterdam</div></div>
+      <div class="itin-views">847 ›</div>
+    </a>
+    <a href="#" class="itin-row">
+      <div class="itin-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><polygon points="12,2 9,9 3,9 7.5,14 5.5,21 12,17 18.5,21 16.5,14 21,9 15,9"/></svg></div>
+      <div class="itin-info"><div class="itin-name">Paris spring guide</div><div class="itin-sub"><span class="pub-dot" style="background:#888;"></span> Coming soon</div></div>
+      <div class="itin-views">— ›</div>
+    </a>
+    <a href="#" class="itin-row">
+      <div class="itin-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D85A30" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;"><path d="M12 2 L8 8 H4 L7 13 L5 20 H10 L12 17 L14 20 H19 L17 13 L20 8 H16 Z"/><circle cx="12" cy="11" r="2"/></svg></div>
+      <div class="itin-info"><div class="itin-name">Mexico City guide</div><div class="itin-sub"><span class="pub-dot" style="background:#639922;"></span> Published · travelmode.blog/cdmx</div></div>
+      <div class="itin-views">2.1k ›</div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-left">travelmode.blog &nbsp;·&nbsp; atlanta, ga &nbsp;·&nbsp; updated may 2026</div>
+  <div class="footer-right"><div class="footer-pip"></div> built different</div>
+</footer>
+
+<script>
+  const items = ['✈', '★', '♡', '📍', '✦', '◈', '✿', '⊹'];
+  const colors = ['#ff69b4','#ffff00','#00ffff','#CECBF6','#F4C0D1','#ff69b4','#AFA9EC'];
+  const container = document.getElementById('falling-container');
+  const count = window.innerWidth < 600 ? 14 : 22;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'falling-item';
+    el.textContent = items[Math.floor(Math.random() * items.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.color = colors[Math.floor(Math.random() * colors.length)];
+    el.style.fontSize = (10 + Math.random() * 14) + 'px';
+    const dur = 10 + Math.random() * 18;
+    el.style.animationDuration = dur + 's';
+    el.style.animationDelay = -(Math.random() * dur) + 's';
+    container.appendChild(el);
+  }
+  function toggleMenu() {
+    document.getElementById('hamburger').classList.toggle('open');
+    document.getElementById('mobile-menu').classList.toggle('open');
+  }
+  function closeMenu() {
+    document.getElementById('hamburger').classList.remove('open');
+    document.getElementById('mobile-menu').classList.remove('open');
+  }
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
+
+<script>
+// ── LIVE GALLERY FROM CLOUDINARY ──
+async function loadGallery() {
+  const grid = document.getElementById('photo-grid');
+  grid.innerHTML = `
+    <div style="grid-column:1/-1;text-align:center;padding:32px;font-size:10px;color:var(--pink-deep);letter-spacing:0.06em;">
+      loading photos...
+    </div>`;
+
+  try {
+    const res = await fetch('/.netlify/functions/get-photos');
+    const data = await res.json();
+
+    if (!data.photos || data.photos.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:32px;font-size:10px;color:var(--pink-deep);">no photos yet</div>`;
+      return;
+    }
+
+    grid.innerHTML = '';
+
+    data.photos.forEach(photo => {
+      // Build a thumb URL using Cloudinary transformations (auto crop to square)
+      const thumbUrl = photo.url.replace('/upload/', '/upload/c_fill,w_400,h_400,q_auto,f_auto/');
+
+      // Try to guess category from tags or filename
+      const tags = photo.tags || [];
+      const name = photo.filename.toLowerCase();
+      let category = 'travel';
+      if (tags.includes('beach') || name.includes('beach') || name.includes('ocean') || name.includes('sea')) category = 'beach';
+      else if (tags.includes('food') || name.includes('food') || name.includes('eat') || name.includes('restaurant')) category = 'food';
+      else if (tags.includes('nature') || name.includes('nature') || name.includes('park') || name.includes('hike')) category = 'nature';
+      else if (tags.includes('city') || name.includes('city') || name.includes('street') || name.includes('urban')) category = 'city';
+
+      // Guess intl vs domestic from tags
+      const isIntl = tags.includes('international') || !tags.includes('domestic');
+      const typeLabel = isIntl ? 'intl' : 'dom';
+      const typeClass = isIntl ? 'tag-intl' : 'tag-dom';
+
+      // Format date
+      const date = photo.createdAt
+        ? new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(new Date(photo.createdAt))
+        : '';
+
+      const card = document.createElement('div');
+      card.className = 'ph-card';
+      card.dataset.type = typeLabel;
+      card.dataset.category = category;
+      card.innerHTML = `
+        <div class="ph-thumb" style="background:#EEEDFE; height:160px;">
+          <img
+            src="${thumbUrl}"
+            alt="${photo.filename}"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+            loading="lazy"
+            onerror="this.style.display='none'"
+          >
+        </div>
+        <span class="ph-type-badge ${typeClass}">${typeLabel}</span>
+        <div class="ph-info">
+          <div class="ph-city">${photo.filename.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '')}</div>
+          <div class="ph-meta">${category} · ${date}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Wire up filter pills to filter the live cards
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const filter = pill.textContent.trim().toLowerCase();
+        document.querySelectorAll('.ph-card').forEach(card => {
+          if (filter === 'all') {
+            card.style.display = '';
+          } else if (filter === 'intl') {
+            card.style.display = card.dataset.type === 'intl' ? '' : 'none';
+          } else if (filter === 'domestic') {
+            card.style.display = card.dataset.type === 'dom' ? '' : 'none';
+          } else {
+            card.style.display = card.dataset.category === filter ? '' : 'none';
+          }
+        });
+      });
+    });
+
+  } catch (err) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:32px;font-size:10px;color:#cc3333;">couldn't load photos — check back soon</div>`;
+    console.error('Gallery load error:', err);
+  }
+}
+
+loadGallery();
+</script>
