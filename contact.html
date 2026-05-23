@@ -111,7 +111,10 @@
   .gb-titlebar-count { font-size: 9px; color: #AFA9EC; display: flex; align-items: center; padding-right: 12px; }
 
   .gb-entries { background: var(--pink-light); }
-  .gb-entry { padding: 14px 16px; border-bottom: 1px dashed var(--pink-mid); }
+  .gb-entry { padding: 14px 16px; border-bottom: 1px dashed var(--pink-mid); position: relative; }
+  .gb-delete-btn { display: none; position: absolute; top: 10px; right: 12px; font-family: 'Space Mono', monospace; font-size: 9px; padding: 3px 8px; background: transparent; color: #cc3333; border: 1px solid #cc3333; cursor: pointer; letter-spacing: 0.06em; transition: all 0.15s; }
+  .gb-delete-btn:hover { background: #cc3333; color: white; }
+  body.admin-mode .gb-delete-btn { display: block; }
   .gb-entry-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
   .gb-entry-avatar { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--navy); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
   .gb-entry-name { font-size: 11px; font-weight: 700; color: var(--navy); }
@@ -270,33 +273,25 @@
     <div class="gb-entries" id="gb-entries">
 
       <div class="gb-entry">
+        <button class="gb-delete-btn" onclick="deleteEntry(this)">[ delete ]</button>
         <div class="gb-entry-header">
-          <div class="gb-entry-avatar" style="background:#EEEDFE;color:#534AB7;">A</div>
-          <div class="gb-entry-name">amsterdam_lover</div>
-          <div class="gb-entry-date">may 22, 2026</div>
-        </div>
-        <div class="gb-entry-msg">your amsterdam photos are unreal!! the canal shots especially. making me want to book a flight right now ✈</div>
-        <div class="gb-entry-location">📍 from: london, uk</div>
-      </div>
-
-      <div class="gb-entry">
-        <div class="gb-entry-header">
-          <div class="gb-entry-avatar" style="background:#FBEAF0;color:#993556;">T</div>
-          <div class="gb-entry-name">travelgirl_tee</div>
+          <div class="gb-entry-avatar" style="background:#FBEAF0;color:#993556;">M</div>
+          <div class="gb-entry-name">Mrs. Pinky Winky</div>
           <div class="gb-entry-date">may 21, 2026</div>
         </div>
-        <div class="gb-entry-msg">fellow guyanese traveller here!! love seeing us out here exploring the world. curacao is on my list for sure 🌊</div>
-        <div class="gb-entry-location">📍 from: toronto, canada</div>
+        <div class="gb-entry-msg">okay the paris shots at night??? not okay. my heart. also curacao needs to be my next trip asap. keep doing what you do 🩷</div>
+        <div class="gb-entry-location">📍 from: brooklyn, ny</div>
       </div>
 
       <div class="gb-entry">
+        <button class="gb-delete-btn" onclick="deleteEntry(this)">[ delete ]</button>
         <div class="gb-entry-header">
-          <div class="gb-entry-avatar" style="background:#FAEEDA;color:#854F0B;">M</div>
-          <div class="gb-entry-name">miles_and_memories</div>
+          <div class="gb-entry-avatar" style="background:#EEEDFE;color:#534AB7;">J</div>
+          <div class="gb-entry-name">JBoogsWifey4Lyfe</div>
           <div class="gb-entry-date">may 19, 2026</div>
         </div>
-        <div class="gb-entry-msg">found you through threads and obsessed with this site!! the retro vibe is everything. followed on all three 🩷</div>
-        <div class="gb-entry-location">📍 from: atlanta, ga</div>
+        <div class="gb-entry-msg">found this through threads and honestly the site alone is a vibe. followed on all three. chicago is going to shake up that top 8 for real ✈</div>
+        <div class="gb-entry-location">📍 from: decatur, ga</div>
       </div>
 
     </div>
@@ -348,7 +343,24 @@
     document.getElementById('mobile-menu').classList.remove('open');
   }
 
-  let entryCount = 3;
+  let entryCount = 2;
+
+  // Admin mode — visit contact.html?admin=true to reveal delete buttons
+  if (new URLSearchParams(window.location.search).get('admin') === 'true') {
+    document.body.classList.add('admin-mode');
+  }
+
+  function deleteEntry(btn) {
+    if (!confirm('delete this entry?')) return;
+    const entry = btn.closest('.gb-entry');
+    entry.style.opacity = '0';
+    entry.style.transition = 'opacity 0.3s';
+    setTimeout(() => {
+      entry.remove();
+      entryCount = Math.max(0, entryCount - 1);
+      document.getElementById('gb-count').textContent = entryCount + ' entries';
+    }, 300);
+  }
 
   function submitEntry() {
     const name = document.getElementById('gb-name').value.trim();
@@ -371,6 +383,7 @@
     entry.className = 'gb-entry';
     entry.style.background = '#fff8fb';
     entry.innerHTML = `
+      <button class="gb-delete-btn" onclick="deleteEntry(this)">[ delete ]</button>
       <div class="gb-entry-header">
         <div class="gb-entry-avatar" style="background:${c[0]};color:${c[1]};">${initial}</div>
         <div class="gb-entry-name">${name}</div>
