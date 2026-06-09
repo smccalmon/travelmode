@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Mode  ✦  Amsterdam in 4 Days</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --pink: #ff69b4; --pink-light: #FFF0F5; --pink-mid: #F4C0D1;
+    --pink-dark: #4B1528; --pink-deep: #993556; --pink-rose: #D4537E;
+    --navy: #1a0038; --navy-mid: #2a004a; --purple: #7F77DD;
+    --purple-light: #EEEDFE; --cyan: #00ffff; --yellow: #ffff00;
+    --magenta: #ff00ff; --cream: #fff8fb; --green: #639922;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--pink-light); font-family: 'Space Mono', monospace; color: var(--navy); min-height: 100vh; overflow-x: hidden; }
+
+  .falling-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+  .falling-item { position: absolute; top: -60px; opacity: 0; animation: fall linear infinite; user-select: none; }
+  @keyframes fall { 0% { transform: translateY(-60px) rotate(0deg); opacity: 0; } 5% { opacity: 0.4; } 90% { opacity: 0.25; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+
+  nav { background: var(--navy); border-bottom: 2px solid var(--pink); position: sticky; top: 0; z-index: 200; height: 54px; display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+  .nav-logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 20px; color: var(--pink); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a { font-size: 10px; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; white-space: nowrap; }
+  .nav-links a:hover { color: var(--pink); }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--cyan); transition: all 0.3s; }
+  .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+  .mobile-menu { display: none; position: fixed; top: 54px; left: 0; right: 0; background: var(--navy); border-bottom: 2px solid var(--pink); z-index: 199; padding: 20px 24px; flex-direction: column; gap: 16px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-size: 13px; color: var(--cyan); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 0; border-bottom: 0.5px solid rgba(255,105,180,0.2); }
+  .mobile-menu a:last-child { border-bottom: none; }
+
+  .marquee-bar { background: var(--navy-mid); border-bottom: 1px solid var(--magenta); padding: 8px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 1; }
+  .marquee-track { display: inline-block; animation: marquee 32s linear infinite; font-size: 10px; color: var(--yellow); letter-spacing: 0.07em; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* HERO */
+  .hero { position: relative; z-index: 1; padding: 50px 24px 44px; border-bottom: 1px dashed var(--pink-mid); }
+  .hero-breadcrumb { font-size: 9px; color: var(--pink-deep); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+  .hero-breadcrumb a { color: var(--cyan); text-decoration: none; }
+  .hero-breadcrumb a:hover { color: var(--pink); }
+  .hero-breadcrumb span { color: var(--pink-mid); }
+  .hero-rank-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 9px; color: var(--yellow); background: var(--navy); padding: 4px 12px 4px 8px; border-radius: 20px; margin-bottom: 16px; letter-spacing: 0.08em; }
+  .hero-rank-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pink); }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(36px, 9vw, 72px); color: var(--navy); line-height: 1.05; margin-bottom: 12px; }
+  .hero-title em { color: var(--pink); font-style: italic; }
+  .hero-sub { font-size: 10px; color: var(--pink-deep); letter-spacing: 0.06em; line-height: 2; margin-bottom: 24px; }
+  .hero-meta-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding-top: 22px; border-top: 1px dashed var(--pink-mid); }
+  .hero-chip { font-size: 9px; padding: 4px 12px; border-radius: 20px; border: 0.5px solid var(--pink-mid); background: var(--cream); color: var(--pink-dark); display: flex; align-items: center; gap: 6px; }
+
+  /* GOOGLE MAPS BANNER */
+  .gmaps-banner { position: relative; z-index: 1; background: var(--navy); border-bottom: 1px solid var(--pink); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .gmaps-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--purple-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .gmaps-text { font-size: 10px; color: #CECBF6; line-height: 1.6; letter-spacing: 0.03em; }
+  .gmaps-text strong { color: var(--yellow); }
+  .gmaps-left { display: flex; align-items: center; gap: 10px; }
+  .gmaps-btn { font-family: 'Space Mono', monospace; font-size: 10px; padding: 8px 16px; background: transparent; color: var(--pink); border: 1.5px solid var(--pink); cursor: pointer; letter-spacing: 0.08em; text-decoration: none; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
+  .gmaps-btn:hover { background: var(--pink); color: var(--navy); }
+
+  /* DAY SECTIONS */
+  .day-section { padding: 44px 24px; border-bottom: 1px dashed var(--pink-mid); position: relative; z-index: 1; }
+  .day-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--pink-deep); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .day-label::after { content: ''; flex: 1; height: 0.5px; background: var(--pink-mid); }
+  .day-title { font-family: 'Playfair Display', serif; font-size: clamp(22px, 5vw, 30px); color: var(--navy); margin-bottom: 6px; }
+  .day-title em { color: var(--pink); font-style: italic; }
+  .day-vibe { font-size: 10px; color: var(--pink-deep); letter-spacing: 0.05em; margin-bottom: 28px; line-height: 1.7; }
+
+  /* TIMELINE */
+  .timeline { display: flex; flex-direction: column; position: relative; margin-bottom: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 17px; top: 8px; bottom: 8px; width: 1px; background: var(--pink-mid); z-index: 0; }
+  .tl-item { display: flex; gap: 16px; position: relative; z-index: 1; padding-bottom: 24px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-dot-wrap { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 35px; }
+  .tl-dot { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--navy); background: var(--pink-light); flex-shrink: 0; margin-top: 3px; }
+  .tl-dot.pink { background: var(--pink); border-color: var(--pink); }
+  .tl-dot.purple { background: var(--purple); border-color: var(--purple); }
+  .tl-dot.yellow { background: var(--yellow); border-color: var(--navy); }
+  .tl-dot.cyan { background: var(--cyan); border-color: var(--navy); }
+  .tl-dot.green { background: var(--green); border-color: var(--green); }
+  .tl-content { flex: 1; padding-bottom: 4px; }
+  .tl-time { font-size: 9px; color: var(--pink-deep); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .tl-heading { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 5px; }
+  .tl-body { font-size: 11px; color: var(--pink-dark); line-height: 1.8; }
+  .tl-tip { margin-top: 8px; font-size: 10px; color: var(--pink-deep); background: var(--cream); border-left: 2px solid var(--pink); padding: 7px 10px; line-height: 1.6; }
+  .tl-tip strong { color: var(--navy); }
+  .tl-coffee { margin-top: 8px; font-size: 10px; color: var(--navy); background: #E1F5EE; border-left: 2px solid var(--green); padding: 7px 10px; line-height: 1.6; }
+  .tl-coffee strong { color: var(--green); }
+
+  /* PLACEHOLDER CHIPS */
+  .ph-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 9px; padding: 3px 10px; border-radius: 20px; border: 0.5px dashed var(--pink); background: var(--pink-light); color: var(--pink-deep); margin: 3px 3px 0 0; }
+
+  /* FORK CARDS */
+  .fork-wrapper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 28px; }
+  @media (max-width: 620px) { .fork-wrapper { grid-template-columns: 1fr; } }
+  .fork-card { border: 1.5px solid var(--pink-mid); border-radius: 10px; padding: 16px 14px; background: #fff; }
+  .fork-card.purple-card { border-color: var(--purple); }
+  .fork-card.cyan-card { border-color: var(--cyan); }
+  .fork-eyebrow { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pink-deep); margin-bottom: 8px; }
+  .fork-eyebrow.purple-eye { color: var(--purple); }
+  .fork-eyebrow.cyan-eye { color: #00aacc; }
+  .fork-title { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--navy); margin-bottom: 6px; }
+  .fork-body { font-size: 10px; color: var(--pink-dark); line-height: 1.8; }
+
+  /* CHATROOM PANEL */
+  .chat-panel { border: 1.5px solid var(--navy); border-radius: 0; overflow: hidden; margin-top: 28px; }
+  .chat-titlebar { background: var(--navy); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .chat-titlebar-left { display: flex; align-items: center; gap: 8px; }
+  .chat-avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--pink-mid); border: 1.5px solid var(--pink); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: var(--pink-dark); flex-shrink: 0; }
+  .chat-titlebar-name { font-size: 11px; color: var(--pink); font-weight: 700; letter-spacing: 0.04em; }
+  .chat-titlebar-sub { font-size: 9px; color: #AFA9EC; }
+  .chat-controls { display: flex; gap: 5px; }
+  .chat-ctrl { font-size: 10px; color: #AFA9EC; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border: 0.5px solid #2a004a; font-family: monospace; cursor: pointer; }
+  .chat-ctrl:hover { background: var(--pink); color: white; }
+  .chat-body { background: var(--pink-light); padding: 14px 14px; display: flex; flex-direction: column; gap: 12px; }
+  .chat-msg { display: flex; gap: 9px; align-items: flex-start; }
+  .chat-msg-avatar { width: 28px; height: 28px; border-radius: 50%; background: #FBEAF0; border: 1.5px solid var(--pink-mid); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--pink-deep); }
+  .chat-msg-body { flex: 1; }
+  .chat-msg-meta { margin-bottom: 3px; }
+  .chat-msg-name { font-size: 11px; font-weight: 700; color: var(--pink-deep); }
+  .chat-msg-time { font-size: 9px; color: #AFA9EC; margin-left: 7px; }
+  .chat-msg-text { font-size: 11px; color: var(--navy); line-height: 1.7; }
+  .chat-photo { background: #fff; border: 0.5px solid var(--pink-mid); border-radius: 6px; overflow: hidden; margin-top: 4px; max-width: 220px; }
+  .chat-photo-img { background: var(--pink-mid); height: 130px; display: flex; align-items: center; justify-content: center; }
+  .chat-photo-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .chat-photo-placeholder { font-size: 9px; color: var(--pink-dark); opacity: 0.5; }
+  .chat-photo-caption { padding: 5px 8px; display: flex; align-items: center; justify-content: space-between; }
+  .chat-photo-cap-text { font-size: 9px; color: var(--pink-deep); }
+  .chat-photo-loc { font-size: 9px; color: #AFA9EC; }
+  .chat-statusbar { background: var(--navy-mid); border-top: 1px solid var(--pink); padding: 4px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .chat-status-txt { font-size: 9px; color: #AFA9EC; }
+  .chat-online { display: flex; align-items: center; gap: 4px; font-size: 9px; color: #00ff00; }
+  .chat-online-dot { width: 5px; height: 5px; border-radius: 50%; background: #00ff00; }
+
+  /* TIPS */
+  .tips-section { padding: 44px 24px; position: relative; z-index: 1; border-bottom: 1px dashed var(--pink-mid); }
+  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(20px, 5vw, 26px); color: var(--navy); margin-bottom: 6px; }
+  .section-title em { color: var(--pink); font-style: italic; }
+  .section-sub { font-size: 9px; color: var(--pink-deep); letter-spacing: 0.05em; line-height: 1.7; margin-bottom: 20px; }
+  .tips-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (max-width: 560px) { .tips-grid { grid-template-columns: 1fr; } }
+  .tip-card { background: #fff; border: 0.5px solid var(--pink-mid); border-radius: 8px; padding: 14px; }
+  .tip-card-label { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pink-deep); margin-bottom: 6px; }
+  .tip-card-body { font-size: 11px; color: var(--navy); line-height: 1.7; }
+
+  .back-strip { padding: 28px 24px; position: relative; z-index: 1; }
+  .back-btn { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--cyan); text-decoration: none; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; width: fit-content; }
+  .back-btn:hover { color: var(--pink); }
+
+  footer { background: var(--navy-mid); border-top: 1px solid var(--magenta); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: relative; z-index: 1; }
+  .footer-left { font-size: 9px; color: #AFA9EC; letter-spacing: 0.05em; }
+  .footer-right { font-size: 9px; color: var(--cyan); letter-spacing: 0.07em; display: flex; align-items: center; gap: 7px; }
+  .footer-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--pink); }
+
+  .fade-in { animation: fadeIn 0.5s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    nav { padding: 0 16px; }
+    .hero { padding: 36px 16px 36px; }
+    .day-section { padding: 36px 16px; }
+    .tips-section { padding: 36px 16px; }
+    .gmaps-banner { padding: 14px 16px; }
+    .back-strip { padding: 20px 16px; }
+    footer { padding: 14px 16px; }
+    .timeline::before { left: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="falling-container" id="falling-container"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 52 52" fill="none"><path d="M8 26L44 10L34 26L44 42L8 26Z" fill="#ff69b4" stroke="#FFF0F5" stroke-width="2.5" stroke-linejoin="round"/><path d="M8 26L22 30L20 38L28 33" fill="#ff69b4" stroke="#FFF0F5" stroke-width="2" stroke-linejoin="round"/></svg>
+    Travel Mode
+  </a>
+  <div class="nav-links">
+    <a href="index.html#gallery">gallery</a>
+    <a href="index.html#top8">[ top 8 ]</a>
+    <a href="index.html#itineraries">itineraries</a>
+    <a href="contact.html">contact</a>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html#gallery" onclick="closeMenu()">gallery</a>
+  <a href="index.html#top8" onclick="closeMenu()">[ top 8 ]</a>
+  <a href="index.html#itineraries" onclick="closeMenu()">itineraries</a>
+  <a href="contact.html" onclick="closeMenu()">contact</a>
+</div>
+
+<div class="marquee-bar">
+  <span class="marquee-track">
+    ✈ amsterdam · ranked #1 &nbsp;★&nbsp; 4 days · canal cruises · museumplein · van stapele cookies · zaandam · rotterdam &nbsp;★&nbsp; the one that set the standard &nbsp;★&nbsp; by pepperpot.png &nbsp;★&nbsp;&nbsp;&nbsp;&nbsp;
+    ✈ amsterdam · ranked #1 &nbsp;★&nbsp; 4 days · canal cruises · museumplein · van stapele cookies · zaandam · rotterdam &nbsp;★&nbsp; the one that set the standard &nbsp;★&nbsp; by pepperpot.png &nbsp;★&nbsp;
+  </span>
+</div>
+
+<!-- HERO -->
+<div class="hero fade-in">
+  <div class="hero-breadcrumb">
+    <a href="index.html">travelmode.blog</a>
+    <span>/</span>
+    <a href="index.html#itineraries">city guides</a>
+    <span>/</span>
+    amsterdam
+  </div>
+  <div class="hero-rank-badge">
+    <div class="hero-rank-dot"></div>
+    ranked #1 in my top 8
+  </div>
+  <h1 class="hero-title">Amsterdam<br>in <em>4 days.</em></h1>
+  <p class="hero-sub">netherlands &nbsp;·&nbsp; western europe &nbsp;·&nbsp; the one that set the standard for every trip after it</p>
+  <div class="hero-meta-row">
+    <span class="hero-chip">
+      <svg width="12" height="12" viewBox="0 0 52 52" fill="none"><rect x="8" y="10" width="36" height="34" rx="4" fill="#CECBF6" stroke="#1a0038" stroke-width="3"/><line x1="16" y1="6" x2="16" y2="16" stroke="#1a0038" stroke-width="3" stroke-linecap="round"/><line x1="36" y1="6" x2="36" y2="16" stroke="#1a0038" stroke-width="3" stroke-linecap="round"/><line x1="8" y1="24" x2="44" y2="24" stroke="#1a0038" stroke-width="2.5"/></svg>
+      4 days
+    </span>
+    <span class="hero-chip">
+      <svg width="12" height="12" viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="18" fill="#9FE1CB" stroke="#1a0038" stroke-width="3"/><ellipse cx="26" cy="26" rx="9" ry="18" fill="none" stroke="#1a0038" stroke-width="2"/><line x1="8" y1="26" x2="44" y2="26" stroke="#1a0038" stroke-width="2"/></svg>
+      international
+    </span>
+    <span class="hero-chip">
+      <svg width="12" height="12" viewBox="0 0 52 52" fill="none"><path d="M26 6C19 6 14 11 14 18C14 28 26 46 26 46C26 46 38 28 38 18C38 11 33 6 26 6Z" fill="#7F77DD" stroke="#1a0038" stroke-width="3" stroke-linejoin="round"/><circle cx="26" cy="18" r="5" fill="#FFF0F5" stroke="#1a0038" stroke-width="2"/></svg>
+      netherlands
+    </span>
+    <span class="hero-chip">
+      <svg width="12" height="12" viewBox="0 0 52 52" fill="none"><path d="M26 44 L26 22" stroke="#1a0038" stroke-width="3" stroke-linecap="round"/><path d="M26 22 C26 22 18 14 14 8 C20 10 26 16 26 22Z" fill="#9FE1CB" stroke="#1a0038" stroke-width="2.5" stroke-linejoin="round"/><path d="M26 28 C26 28 34 20 38 14 C32 16 26 22 26 28Z" fill="#9FE1CB" stroke="#1a0038" stroke-width="2.5" stroke-linejoin="round"/></svg>
+      by pepperpot.png
+    </span>
+  </div>
+</div>
+
+<!-- GOOGLE MAPS BANNER -->
+<div class="gmaps-banner">
+  <div class="gmaps-left">
+    <div class="gmaps-icon">
+      <svg width="16" height="16" viewBox="0 0 52 52" fill="none"><path d="M26 6C19 6 14 11 14 18C14 28 26 46 26 46C26 46 38 28 38 18C38 11 33 6 26 6Z" fill="#7F77DD" stroke="#FFF0F5" stroke-width="2.5"/><circle cx="26" cy="18" r="5" fill="#FFF0F5"/></svg>
+    </div>
+    <div class="gmaps-text"><strong>AMS · Stacey</strong>  ✦  100+ saved spots. open on your phone, filter by neighborhood, and let proximity decide.</div>
+  </div>
+  <a href="https://maps.app.goo.gl/njrgz2H4MkPGvAp47?g_st=i" target="_blank" rel="noopener" class="gmaps-btn">[ open google list ] ›</a>
+</div>
+
+
+<!-- DAY 1 -->
+<div class="day-section" id="day1">
+  <div class="day-label">Day 01</div>
+  <h2 class="day-title">Get immersed. <em>Feel the city.</em></h2>
+  <p class="day-vibe">no agenda, no rushing. today is about orientation  ✦  neighborhoods, canals, energy. let amsterdam introduce itself on its own terms.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot pink"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">morning  ✦  settle in</div>
+        <div class="tl-heading">Drop your bags & get your bearings</div>
+        <div class="tl-body">Check in, get oriented. Pull up the Google list and scan what's near your hotel before you head out. This is your home base for four days  ✦  know what's walking distance.</div>
+        <div class="tl-tip"><strong>tip:</strong> filter the Google list by your neighborhood first. that's your Day 1 radius.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot purple"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">late morning</div>
+        <div class="tl-heading">First meal & first coffee</div>
+        <div class="tl-body">Find a spot from the list or wander until something calls. Today you're eating by feel, not by plan.
+          <br><br><span class="ph-chip">🍳 breakfast TBD</span> <span class="ph-chip">☕ coffee stop TBD</span>
+        </div>
+        <div class="tl-coffee"><strong>☕ coffee shop note:</strong> if that's your thing, Amsterdam is one of the best cities in the world for it. coffeeshops are legal, clearly marked, and everywhere. start light if it's your first time  ✦  you're walking a lot today.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot cyan"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">afternoon</div>
+        <div class="tl-heading">Canal cruise</div>
+        <div class="tl-body">The best way to understand Amsterdam's layout is from the water. Guided tour or a self-guided boat rental  ✦  either works. You'll pass through the Jordaan, the canal ring, and get the full picture of how the city is built.</div>
+        <div class="tl-tip"><strong>tip:</strong> boat rentals are chaotic and fun if you want to drive it yourselves. evening slots catch golden hour on the canals.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot pink"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">mid-afternoon</div>
+        <div class="tl-heading">Walking tour + a snack</div>
+        <div class="tl-body">Walk a neighborhood loop  ✦  the Jordaan and De 9 Straatjes (Nine Streets) are perfect for first-day wandering. Independent shops, small galleries, canal bridges. Grab a snack mid-walk.
+          <br><br><span class="ph-chip">🥐 snack TBD</span>
+        </div>
+        <div class="tl-tip"><strong>neighborhoods to clock:</strong> Jordaan · De Pijp · Oud-West · the canal ring. take note of which vibe you're drawn to  ✦  it'll shape Day 3.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot yellow"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">evening</div>
+        <div class="tl-heading">Dinner & night lounge</div>
+        <div class="tl-body">First night dinner  ✦  make it a treat. Amsterdam does Italian, seafood, and oyster bars really well. Cocktails after, somewhere low-key. You walked a lot today. You earned it.
+          <br><br><span class="ph-chip">🍝 dinner TBD</span> <span class="ph-chip">🍸 cocktails TBD</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHATROOM DAY 1 -->
+  <div class="chat-panel">
+    <div class="chat-titlebar">
+      <div class="chat-titlebar-left">
+        <div class="chat-avatar">P</div>
+        <div>
+          <div class="chat-titlebar-name">pepperpot.png</div>
+          <div class="chat-titlebar-sub">day 1 recap · amsterdam</div>
+        </div>
+      </div>
+      <div class="chat-controls">
+        <div class="chat-ctrl">─</div><div class="chat-ctrl">□</div><div class="chat-ctrl">✕</div>
+      </div>
+    </div>
+    <div class="chat-body">
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">10:22am</span></div>
+          <div class="chat-msg-text">just dropped my bags and already in love. the canals hit different in person  ✦  no photo prepares you for it</div>
+        </div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">2:47pm</span></div>
+          <div class="chat-msg-text">canal cruise was the right call for day one. seeing the whole city from the water before you do anything else just makes everything click 🛶</div>
+          <div class="chat-photo">
+            <div class="chat-photo-img"><span class="chat-photo-placeholder">[ canal cruise photo ]</span></div>
+            <div class="chat-photo-caption"><span class="chat-photo-cap-text">Amsterdam canals, Day 1</span><span class="chat-photo-loc">📍 Jordaan</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">9:14pm</span></div>
+          <div class="chat-msg-text">dinner was everything. the Nine Streets are going to be a problem for my wallet tomorrow, already clocked like 6 shops i need to go back to 😅</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-statusbar">
+      <div class="chat-status-txt">Pepper IM v1.0 · travelmode.blog</div>
+      <div class="chat-online"><div class="chat-online-dot"></div> online</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- DAY 2 -->
+<div class="day-section" id="day2">
+  <div class="day-label">Day 02</div>
+  <h2 class="day-title">Museum day. <em>Slow it down.</em></h2>
+  <p class="day-vibe">museumplein is the cultural center of the city. rijksmuseum, van gogh, stedelijk  ✦  all in one square. you don't have to do all three. pick your pace.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot pink"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">morning</div>
+        <div class="tl-heading">Breakfast</div>
+        <div class="tl-body">Start slow. A café with good eggs or a proper Dutch breakfast. Amsterdam breakfast spots are small, cozy, and worth taking your time at.
+          <br><br><span class="ph-chip">🍳 breakfast TBD</span>
+        </div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot purple"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">mid-morning</div>
+        <div class="tl-heading">Tram to Museumplein</div>
+        <div class="tl-body">Hop the tram  ✦  don't walk, save your energy. The Rijksmuseum facade opens up in front of you and it never gets old. Book tickets in advance, the queues are no joke.</div>
+        <div class="tl-tip"><strong>tip:</strong> Rijksmuseum and Van Gogh Museum are right next to each other. pick one to go deep on rather than rushing both.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot pink"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">afternoon</div>
+        <div class="tl-heading">Lunch + Van Stapele cookies</div>
+        <div class="tl-body">Lunch near the museum district, then make the walk to Van Stapele Koekmakerij. One type of cookie, warm, filled with chocolate ganache. The line moves fast. Non-negotiable.
+          <br><br><span class="ph-chip">🥗 lunch TBD</span> <span class="ph-chip">🍪 Van Stapele Koekmakerij</span>
+        </div>
+        <div class="tl-tip"><strong>Van Stapele:</strong> Heilige weg 2, near Kalverstraat. confirm cash/card before you go.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot green"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">afternoon cont.</div>
+        <div class="tl-heading">Coffee shop break</div>
+        <div class="tl-body">If that's your jam  ✦  mid-afternoon on a museum day is the move. You've already done the culture, now decompress. Then circle back for more museum time or the Stedelijk (contemporary art) if you've got energy left.</div>
+        <div class="tl-coffee"><strong>☕ coffee shop note:</strong> don't mix up coffee shops (coffeeshops) and regular cafés  ✦  the signs are different. coffeeshops will have their menu visible at the door. staff are used to tourists and will walk you through it.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot cyan"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">late afternoon</div>
+        <div class="tl-heading">Neighborhood stroll</div>
+        <div class="tl-body">Wander into whichever neighborhood called to you on Day 1. The canal ring is beautiful in late afternoon light. Find a coffee, sit by a canal.
+          <br><br><span class="ph-chip">☕ afternoon coffee TBD</span>
+        </div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot yellow"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">evening</div>
+        <div class="tl-heading">Oysters & night plans</div>
+        <div class="tl-body">Good night for oysters or a seafood spot. Check the Google list for what's closest to where you ended up.
+          <br><br><span class="ph-chip">🦪 oysters TBD</span> <span class="ph-chip">🌙 night plans TBD</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHATROOM DAY 2 -->
+  <div class="chat-panel">
+    <div class="chat-titlebar">
+      <div class="chat-titlebar-left">
+        <div class="chat-avatar">P</div>
+        <div>
+          <div class="chat-titlebar-name">pepperpot.png</div>
+          <div class="chat-titlebar-sub">day 2 recap · amsterdam</div>
+        </div>
+      </div>
+      <div class="chat-controls">
+        <div class="chat-ctrl">─</div><div class="chat-ctrl">□</div><div class="chat-ctrl">✕</div>
+      </div>
+    </div>
+    <div class="chat-body">
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">11:03am</span></div>
+          <div class="chat-msg-text">museumplein is genuinely one of the most beautiful squares i've walked through. the rijksmuseum building alone is worth the trip 🎨</div>
+          <div class="chat-photo">
+            <div class="chat-photo-img"><span class="chat-photo-placeholder">[ Rijksmuseum photo ]</span></div>
+            <div class="chat-photo-caption"><span class="chat-photo-cap-text">Museumplein, Day 2</span><span class="chat-photo-loc">📍 Museumkwartier</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">2:15pm</span></div>
+          <div class="chat-msg-text">van stapele cookie report: still the best thing i've ever eaten. warm ganache center. you will go back for a second one. i'm not even going to pretend you won't 🍪</div>
+        </div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">9:40pm</span></div>
+          <div class="chat-msg-text">oysters for dinner was the right call. every time. amsterdam's seafood scene is underrated, take notes 🦪</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-statusbar">
+      <div class="chat-status-txt">Pepper IM v1.0 · travelmode.blog</div>
+      <div class="chat-online"><div class="chat-online-dot"></div> online</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- DAY 3 -->
+<div class="day-section" id="day3">
+  <div class="day-label">Day 03</div>
+  <h2 class="day-title">Your call. <em>Pick your adventure.</em></h2>
+  <p class="day-vibe">day three is a fork. go deeper into amsterdam, get out to zaandam, or take it to rotterdam. all three are valid. just pick before breakfast.</p>
+
+  <div class="fork-wrapper">
+    <div class="fork-card">
+      <div class="fork-eyebrow">option a  ✦  stay in the city</div>
+      <div class="fork-title">More Amsterdam</div>
+      <div class="fork-body">Go back to a neighborhood you didn't finish. Hit the Albert Cuyp market in De Pijp on a weekday. Explore the Jordaan's side streets. Find that bookshop or record store you clocked on Day 1 but didn't have time for. Use the Google list to build a loose route.</div>
+    </div>
+    <div class="fork-card purple-card">
+      <div class="fork-eyebrow purple-eye">option b  ✦  day trip north</div>
+      <div class="fork-title">Zaandam</div>
+      <div class="fork-body">17-minute train from Amsterdam Centraal. Zaanse Schans is the windmill village  ✦  wooden houses, historic mills, open-air museum energy. Go early, beat the crowds, and be back by afternoon for a proper dinner.</div>
+    </div>
+    <div class="fork-card cyan-card">
+      <div class="fork-eyebrow cyan-eye">option c  ✦  day trip south</div>
+      <div class="fork-title">Rotterdam</div>
+      <div class="fork-body">40 minutes by train and a completely different city. Modern architecture, the Markthal, the cube houses, the port. Where Amsterdam is historical and romantic, Rotterdam is bold and forward. Worth it if you want contrast.</div>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot pink"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">morning</div>
+        <div class="tl-heading">Breakfast  ✦  same ritual, different spot</div>
+        <div class="tl-body">Find somewhere new for breakfast. By now you have a type. Lean into it.
+          <br><br><span class="ph-chip">🍳 breakfast TBD</span> <span class="ph-chip">☕ coffee TBD</span>
+        </div>
+        <div class="tl-coffee"><strong>☕ coffee shop note:</strong> if you're doing a day trip (Zaandam or Rotterdam), have your coffeeshop moment in Amsterdam before you leave  ✦  the vibe is different in those cities and you'll want your wits for the train and navigating somewhere new.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot purple"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">mid-morning to afternoon</div>
+        <div class="tl-heading">Your chosen adventure</div>
+        <div class="tl-body">Whichever fork you picked  ✦  commit. If Zaandam or Rotterdam, get on the train before 10am and give yourself 3–4 hours. If staying in Amsterdam, pick two or three Google list spots in your target neighborhood and walk between them.</div>
+        <div class="tl-tip"><strong>Rotterdam tip:</strong> the Markthal food hall is a must  ✦  lunch in there, then walk the cube houses (Kubuswoningen) which are literally steps away. architecture people will lose their minds.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot pink"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">afternoon</div>
+        <div class="tl-heading">Lunch + wander</div>
+        <div class="tl-body">Lunch wherever makes sense for where you are. Let the afternoon be loose.
+          <br><br><span class="ph-chip">🥗 lunch TBD</span>
+        </div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot yellow"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">evening</div>
+        <div class="tl-heading">Dinner & cocktails</div>
+        <div class="tl-body">Good night for a steakhouse or burger  ✦  switch it up from the seafood. Then somewhere with good cocktails and low energy.
+          <br><br><span class="ph-chip">🥩 steakhouse / burger TBD</span> <span class="ph-chip">🍸 cocktails TBD</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHATROOM DAY 3 -->
+  <div class="chat-panel">
+    <div class="chat-titlebar">
+      <div class="chat-titlebar-left">
+        <div class="chat-avatar">P</div>
+        <div>
+          <div class="chat-titlebar-name">pepperpot.png</div>
+          <div class="chat-titlebar-sub">day 3 recap · amsterdam</div>
+        </div>
+      </div>
+      <div class="chat-controls">
+        <div class="chat-ctrl">─</div><div class="chat-ctrl">□</div><div class="chat-ctrl">✕</div>
+      </div>
+    </div>
+    <div class="chat-body">
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">9:55am</span></div>
+          <div class="chat-msg-text">took the train out today and it was the right call. a different city is a palette cleanser  ✦  you come back to amsterdam even more obsessed</div>
+        </div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">1:30pm</span></div>
+          <div class="chat-msg-text">rotterdam's markthal is genuinely one of the most stunning buildings i've walked into. the ceiling alone 👀</div>
+          <div class="chat-photo">
+            <div class="chat-photo-img"><span class="chat-photo-placeholder">[ day trip photo ]</span></div>
+            <div class="chat-photo-caption"><span class="chat-photo-cap-text">Day 3 adventure</span><span class="chat-photo-loc">📍 your pick</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">10:02pm</span></div>
+          <div class="chat-msg-text">burger night was necessary. sometimes you just need a good burger after two days of culture and canal vibes 🍔</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-statusbar">
+      <div class="chat-status-txt">Pepper IM v1.0 · travelmode.blog</div>
+      <div class="chat-online"><div class="chat-online-dot"></div> online</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- DAY 4 -->
+<div class="day-section" id="day4">
+  <div class="day-label">Day 04</div>
+  <h2 class="day-title">Back to your <em>favorites.</em></h2>
+  <p class="day-vibe">no new agenda. this day belongs to the places that already got you. revisit, eat the thing again, buy what you talked yourself out of earlier.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot pink"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">morning</div>
+        <div class="tl-heading">Breakfast at your favorite spot</div>
+        <div class="tl-body">You know where to go now. Go back to the place that felt most like Amsterdam. Take your time  ✦  this is the last slow morning.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot green"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">mid-morning</div>
+        <div class="tl-heading">Revisit your people, your places</div>
+        <div class="tl-body">The shop you didn't go back to. Van Stapele again  ✦  obviously. The canal you liked best. Anything from the Google list you starred but never made it to.</div>
+        <div class="tl-coffee"><strong>☕ coffee shop note:</strong> last day, no agenda  ✦  if you want a mellow coffeeshop morning before a slow wander, this is the day for it. pick somewhere canal-side and just exist for a bit.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot cyan"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">afternoon</div>
+        <div class="tl-heading">Last lunch + final wander</div>
+        <div class="tl-body">Make it a good one. Check the Google list for anything you starred and never got to.
+          <br><br><span class="ph-chip">🍽️ final lunch TBD</span>
+        </div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot yellow"></div></div>
+      <div class="tl-content">
+        <div class="tl-time">evening</div>
+        <div class="tl-heading">Farewell dinner</div>
+        <div class="tl-body">Make it a proper send-off. Oysters to start, something worth writing home about. Then find a canal to sit by with a drink and just be in it  ✦  one last time.
+          <br><br><span class="ph-chip">🦪 oysters TBD</span> <span class="ph-chip">🍷 farewell dinner TBD</span> <span class="ph-chip">🌙 canal-side nightcap</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHATROOM DAY 4 -->
+  <div class="chat-panel">
+    <div class="chat-titlebar">
+      <div class="chat-titlebar-left">
+        <div class="chat-avatar">P</div>
+        <div>
+          <div class="chat-titlebar-name">pepperpot.png</div>
+          <div class="chat-titlebar-sub">day 4 recap · amsterdam</div>
+        </div>
+      </div>
+      <div class="chat-controls">
+        <div class="chat-ctrl">─</div><div class="chat-ctrl">□</div><div class="chat-ctrl">✕</div>
+      </div>
+    </div>
+    <div class="chat-body">
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">11:40am</span></div>
+          <div class="chat-msg-text">went back to van stapele first thing. no regrets. got two this time 🍪🍪</div>
+        </div>
+      </div>
+      <div class="chat-msg">
+        <div class="chat-msg-avatar">P</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-meta"><span class="chat-msg-name">pepperpot.png</span><span class="chat-msg-time">7:22pm</span></div>
+          <div class="chat-msg-text">farewell dinner by the canal. i've been plotting my return trip since day two and i'm not even at the airport yet. amsterdam, you did that 🩷</div>
+          <div class="chat-photo">
+            <div class="chat-photo-img"><span class="chat-photo-placeholder">[ farewell canal shot ]</span></div>
+            <div class="chat-photo-caption"><span class="chat-photo-cap-text">Last night in Amsterdam</span><span class="chat-photo-loc">📍 canal-side</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-statusbar">
+      <div class="chat-status-txt">Pepper IM v1.0 · travelmode.blog</div>
+      <div class="chat-online"><div class="chat-online-dot"></div> online</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- TIPS -->
+<div class="tips-section">
+  <h2 class="section-title">Quick <em>notes</em></h2>
+  <p class="section-sub">things to know before you go</p>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <div class="tip-card-label">getting around</div>
+      <div class="tip-card-body">Tram system is easy and covers most of the city. Use a contactless card or grab an OV-chipkaart. Bikes are everywhere  ✦  renting one is worth it if you're comfortable with Amsterdam traffic (it is real traffic).</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-card-label">museum tickets</div>
+      <div class="tip-card-body">Book Rijksmuseum and Van Gogh Museum in advance. Walk-up tickets sell out fast, especially in summer. Go direct through museum websites  ✦  skip the third-party resellers.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-card-label">coffee shops 101</div>
+      <div class="tip-card-body">Legal, clearly marked, and everywhere. Staff are used to first-timers and will walk you through the menu. Start lighter than you think you need to. Mixing with alcohol hits differently  ✦  take it easy until you know your tolerance.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-card-label">day trips</div>
+      <div class="tip-card-body">Zaandam is 17 min north. Rotterdam is 40 min south. Both worth it for totally different reasons. Trains run frequently from Amsterdam Centraal  ✦  no pre-booking needed for most departures.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-card-label">cash & cards</div>
+      <div class="tip-card-body">Most places take card, but smaller cafés and market stalls may be cash-only. Keep some euros on hand. Van Stapele  ✦  confirm before you go.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-card-label">the google list</div>
+      <div class="tip-card-body">100+ personally saved spots. Filter by neighborhood in Google Maps and use it as your daily reference  ✦  sorted to work alongside this guide wherever you are in the city.</div>
+    </div>
+  </div>
+</div>
+
+<div class="back-strip">
+  <a href="index.html#itineraries" class="back-btn">
+    <svg width="14" height="14" viewBox="0 0 52 52" fill="none"><path d="M32 10L16 26L32 42" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    back to city guides
+  </a>
+</div>
+
+<footer>
+  <div class="footer-left">travelmode.blog &nbsp;·&nbsp; atlanta, ga &nbsp;·&nbsp; updated june 2026</div>
+  <div class="footer-right"><div class="footer-pip"></div> built different</div>
+</footer>
+
+<script>
+  const items = ['✈', '★', '♡', '✦', '◈', '✿', '⊹', '✶'];
+  const colors = ['#ff69b4','#ffff00','#00ffff','#CECBF6','#F4C0D1','#ff69b4','#AFA9EC','#9FE1CB'];
+  const container = document.getElementById('falling-container');
+  const count = window.innerWidth < 600 ? 14 : 22;
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'falling-item';
+    el.textContent = items[Math.floor(Math.random() * items.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.color = colors[Math.floor(Math.random() * colors.length)];
+    el.style.fontSize = (10 + Math.random() * 14) + 'px';
+    const dur = 10 + Math.random() * 18;
+    el.style.animationDuration = dur + 's';
+    el.style.animationDelay = -(Math.random() * dur) + 's';
+    container.appendChild(el);
+  }
+  function toggleMenu() {
+    document.getElementById('hamburger').classList.toggle('open');
+    document.getElementById('mobile-menu').classList.toggle('open');
+  }
+  function closeMenu() {
+    document.getElementById('hamburger').classList.remove('open');
+    document.getElementById('mobile-menu').classList.remove('open');
+  }
+</script>
+</body>
+</html>
